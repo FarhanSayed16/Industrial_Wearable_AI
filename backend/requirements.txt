@@ -1,0 +1,13 @@
+# Industrial Wearable AI — Backend Dependencies
+# Python 3.10+
+
+fastapi>=0.100
+uvicorn[standard]>=0.22
+sqlalchemy[asyncio]>=2.0
+asyncpg>=0.28
+alembic>=1.12
+psycopg2-binary>=2.9
+pydantic>=2.0
+python-jose[cryptography]
+passlib[bcrypt]
+python-dotenv
