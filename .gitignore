@@ -38,6 +38,3 @@ ml/models/*.pkl
 ml/data/raw/*.csv
 ml/data/labeled/*.csv
 *.log
-
-*
-!.gitignore
