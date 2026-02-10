@@ -64,5 +64,6 @@ Replace `firmware/src/main.cpp` with the final ESP32 implementation when hardwar
 
 - **MASTER_PLAN.md** — Step-by-step implementation guide
 - **RUN_ORDER.md** — Service startup order
+- **TESTING_WITHOUT_HARDWARE.md** — How to test without wearable hardware
 - **PILOT_PREP.md** — Pilot deployment checklist
 - **TECHNICAL_STACK_SPEC.md** — API contracts, data formats
