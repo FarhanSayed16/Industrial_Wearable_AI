@@ -1,0 +1,12 @@
+/**
+ * Industrial Wearable AI — App-level styles
+ * Minimal; components use theme tokens.
+ */
+
+/* Root layout — no centering; full-width for dashboard */
+#root {
+  max-width: 100%;
+  margin: 0;
+  padding: 0;
+  text-align: left;
+}
