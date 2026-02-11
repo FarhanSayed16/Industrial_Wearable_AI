@@ -1,0 +1,100 @@
+/**
+ * Industrial Wearable AI — Design System
+ * Phase 0: Design tokens, theme, typography
+ */
+
+/* ========== Typography ========== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  /* Font */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Colors — Light theme (Industrial Teal) */
+  --color-primary: #0d9488;
+  --color-primary-hover: #0f766e;
+  --color-primary-muted: #ccfbf1;
+  --color-success: #22c55e;
+  --color-success-muted: #dcfce7;
+  --color-warning: #f59e0b;
+  --color-warning-muted: #fef3c7;
+  --color-error: #ef4444;
+  --color-error-muted: #fee2e2;
+  --color-idle: #94a3b8;
+  --color-idle-muted: #f1f5f9;
+
+  /* Semantic */
+  --color-sewing: #22c55e;
+  --color-adjusting: #3b82f6;
+  --color-break: #f59e0b;
+  --color-ergo: #f59e0b;
+  --color-fatigue: #ec4899;
+
+  /* Background & surface */
+  --color-bg: #f8fafc;
+  --color-bg-card: #ffffff;
+  --color-bg-elevated: #ffffff;
+
+  /* Text */
+  --color-text: #0f172a;
+  --color-text-muted: #64748b;
+  --color-text-subtle: #94a3b8;
+
+  /* Border */
+  --color-border: #e2e8f0;
+  --color-border-muted: #f1f5f9;
+
+  /* Radius */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.05);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+
+  /* Transitions */
+  --transition-fast: 150ms ease;
+  --transition-normal: 250ms ease;
+  --transition-slow: 350ms ease;
+
+  /* Spacing (optional, for consistency) */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-5: 1.25rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+}
+
+/* Dark theme (optional — add .dark to html/body when implementing toggle) */
+[data-theme="dark"] {
+  --color-primary: #14b8a6;
+  --color-primary-muted: #134e4a;
+  --color-success: #4ade80;
+  --color-success-muted: #14532d;
+  --color-warning: #fbbf24;
+  --color-warning-muted: #422006;
+  --color-error: #f87171;
+  --color-error-muted: #450a0a;
+  --color-idle: #94a3b8;
+  --color-idle-muted: #334155;
+
+  --color-bg: #0f172a;
+  --color-bg-card: #1e293b;
+  --color-bg-elevated: #334155;
+
+  --color-text: #f8fafc;
+  --color-text-muted: #94a3b8;
+  --color-text-subtle: #64748b;
+
+  --color-border: #334155;
+  --color-border-muted: #1e293b;
+
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -2px rgba(0, 0, 0, 0.2);
+  --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+}
