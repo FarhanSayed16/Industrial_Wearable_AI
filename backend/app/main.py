@@ -7,7 +7,7 @@ import time
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import auth, events, sessions, workers
+from app.api import activity, auth, events, live, sessions, workers
 from app.config import CORS_ORIGINS
 from app.database import get_db
 from app.services.websocket_hub import ws_hub
@@ -46,8 +46,10 @@ async def log_requests(request: Request, call_next):
 # Include routers
 app.include_router(auth.router)
 app.include_router(events.router)
+app.include_router(live.router)
 app.include_router(workers.router)
 app.include_router(sessions.router)
+app.include_router(activity.router)
 
 
 @app.get("/")
