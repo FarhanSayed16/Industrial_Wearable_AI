@@ -72,6 +72,14 @@ export default function AlertsPanel({ workers }: AlertsPanelProps) {
               const reasons = [w.risk_ergo && "Ergonomics", w.risk_fatigue && "Fatigue"]
                 .filter(Boolean)
                 .join(", ");
+              const updatedAgo = w.updated_at
+                ? (() => {
+                    const sec = (Date.now() - w.updated_at) / 1000;
+                    if (sec < 60) return "just now";
+                    if (sec < 3600) return `${Math.floor(sec / 60)}m ago`;
+                    return new Date(w.updated_at).toLocaleTimeString();
+                  })()
+                : null;
               return (
                 <motion.li
                   key={w.worker_id}
@@ -83,6 +91,11 @@ export default function AlertsPanel({ workers }: AlertsPanelProps) {
                   <span className="alerts-severity-dot" data-severity={severity} />
                   <strong>{w.name}</strong>
                   <span>{reasons}</span>
+                  {updatedAgo && (
+                    <span className="alerts-item-updated" title="Last updated">
+                      Updated {updatedAgo}
+                    </span>
+                  )}
                 </motion.li>
               );
             })}
