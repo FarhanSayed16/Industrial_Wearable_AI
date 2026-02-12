@@ -18,3 +18,16 @@ class WorkerOut(BaseModel):
     role: Optional[str] = None
     device_id: Optional[UUID] = None
     created_at: datetime
+
+
+class WorkerHistoryEntry(BaseModel):
+    """Single session summary for a worker's history."""
+
+    session_id: UUID
+    started_at: datetime
+    ended_at: Optional[datetime] = None
+    active_pct: Optional[float] = None
+    idle_pct: Optional[float] = None
+    adjusting_pct: Optional[float] = None
+    error_pct: Optional[float] = None
+    alert_count: int = 0
