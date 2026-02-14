@@ -1,0 +1,267 @@
+/**
+ * Industrial Wearable AI — Chart styles
+ */
+
+.activity-donut {
+  margin-bottom: var(--space-4);
+}
+
+.chart-empty {
+  padding: var(--space-6);
+  text-align: center;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+
+.chart-title {
+  margin: 0 0 var(--space-2) 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+.chart-header-with-controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-2);
+  flex-wrap: wrap;
+}
+.chart-time-range-select {
+  font-size: 0.8125rem;
+  padding: 0.35rem 0.6rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-bg);
+  color: var(--color-text);
+  cursor: pointer;
+}
+
+/* Live charts section (Phase B) */
+.live-charts-section {
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
+  border-top: 1px solid var(--color-border);
+}
+.live-charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: var(--space-6);
+}
+@media (max-width: 640px) {
+  .live-charts-grid {
+    grid-template-columns: 1fr;
+  }
+  .worker-cards-grid {
+    grid-template-columns: 1fr;
+  }
+}
+.live-chart-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: var(--space-5);
+  box-shadow: var(--shadow-sm);
+}
+.state-donut-live .chart-title,
+.activity-timeline-chart .chart-title,
+.alerts-trend-chart .chart-title {
+  margin-bottom: var(--space-3);
+}
+
+/* Live sensor strip (Phase C) */
+.live-sensor-strip {
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+.live-sensor-strip-empty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+}
+.live-sensor-strip-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: var(--space-3);
+  font-size: 0.875rem;
+  color: var(--color-text);
+}
+.live-sensor-strip-header strong {
+  font-weight: 600;
+}
+.live-sensor-strip-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: var(--space-3);
+}
+.live-sensor-card {
+  padding: var(--space-3);
+  background: var(--color-bg);
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-muted);
+}
+.live-sensor-card-name {
+  font-weight: 600;
+  font-size: 0.875rem;
+  margin-bottom: 0.5rem;
+}
+.live-sensor-card-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.8rem;
+  margin-bottom: 0.25rem;
+}
+.live-sensor-label {
+  color: var(--color-text-muted);
+}
+.live-sensor-value {
+  color: var(--color-text);
+  font-weight: 500;
+}
+.live-sensor-icon {
+  color: var(--color-text-muted);
+  flex-shrink: 0;
+}
+.live-sensor-movement-low {
+  color: var(--color-success);
+}
+.live-sensor-movement-medium {
+  color: var(--color-warning);
+}
+.live-sensor-movement-high {
+  color: var(--color-error);
+}
+.live-sensor-movement-none {
+  color: var(--color-text-muted);
+}
+.live-sensor-card-updated {
+  font-size: 0.7rem;
+  color: var(--color-text-muted);
+  margin-top: 0.5rem;
+}
+
+/* KPI cards */
+/* Live Overview page */
+.live-overview-page {
+  padding-bottom: var(--space-6);
+}
+.live-overview-subtitle {
+  margin: 0 0 var(--space-4) 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+
+/* Live View sections: Live now | Sample workers | Charts */
+.live-section {
+  margin-top: var(--space-6);
+  padding-top: var(--space-4);
+  border-top: 1px solid var(--color-border);
+}
+.live-section:first-of-type {
+  margin-top: 0;
+  padding-top: 0;
+  border-top: none;
+}
+.live-section-heading {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: 0 0 var(--space-3) 0;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.live-section-heading--muted {
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+}
+.live-section-meta {
+  font-size: 0.8125rem;
+  font-weight: 400;
+  color: var(--color-text-muted);
+}
+.live-section-empty {
+  margin: 0 0 var(--space-4) 0;
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+}
+.live-section--sample {
+  background: var(--color-bg);
+  padding: var(--space-5);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--color-border-muted);
+}
+.live-section--sample .live-section-heading--muted {
+  margin-bottom: var(--space-4);
+}
+.live-section--sample .worker-cards-grid {
+  margin-top: var(--space-3);
+}
+
+.no-mpu-banner {
+  display: inline-block;
+  margin-bottom: var(--space-3);
+  padding: 0.35rem 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: var(--color-text-muted);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.kpi-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  gap: var(--space-4);
+  margin-bottom: var(--space-6);
+}
+
+.kpi-card {
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: var(--space-4);
+  text-align: center;
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+.kpi-card::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 4px;
+  border-radius: var(--radius-md) 0 0 var(--radius-md);
+  background: var(--color-primary);
+}
+.kpi-card[data-color="success"]::before { background: var(--color-success); }
+.kpi-card[data-color="idle"]::before { background: var(--color-idle); }
+.kpi-card[data-color="error"]::before { background: var(--color-error); }
+.kpi-card[data-color="muted"]::before { background: var(--color-text-muted); }
+
+.kpi-value {
+  display: block;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.kpi-label {
+  display: block;
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+  margin-top: 0.25rem;
+}
