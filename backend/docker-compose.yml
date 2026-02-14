@@ -1,6 +1,7 @@
+# If "500 Internal Server Error" when pulling postgres:15, try: postgres:15-alpine or postgres:14
 services:
   postgres:
-    image: postgres:15
+    image: postgres:15-alpine
     container_name: wearable_ai_postgres
     environment:
       POSTGRES_USER: postgres
