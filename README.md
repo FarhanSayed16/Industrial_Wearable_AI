@@ -53,7 +53,8 @@ cd backend && python change_password.py admin
 ├── edge/             # BLE client, ML pipeline, API client
 ├── firmware/         # ESP32 (PlatformIO)
 ├── ml/               # Training, simulator, data
-└── docs/             # MASTER_PLAN, RUN_ORDER, specs
+├── docs/             # Documentation, RESEARCH_PAPER, RUN_COMMANDS
+└── docs/uml/         # PlantUML diagrams (use case, component, deployment, sequence, class, activity, state)
 ```
 
 ## Firmware
@@ -62,8 +63,11 @@ Replace `firmware/src/main.cpp` with the final ESP32 implementation when hardwar
 
 ## Documentation
 
-- **MASTER_PLAN.md** — Step-by-step implementation guide
-- **RUN_ORDER.md** — Service startup order
-- **TESTING_WITHOUT_HARDWARE.md** — How to test without wearable hardware
-- **PILOT_PREP.md** — Pilot deployment checklist
-- **TECHNICAL_STACK_SPEC.md** — API contracts, data formats
+- **docs/PROJECT_DOCUMENTATION.md** — **Complete project documentation** (what was built, architecture, features, run, APIs, troubleshooting)
+- **docs/RUN_COMMANDS.md** — Commands to run the project (Docker or PostgreSQL on Windows)
+- **docs/HARDWARE_CONNECTIONS.md** — Wiring, MPU6050/9250, troubleshooting
+- **docs/RUN_ORDER.md** — Service startup order
+- **docs/TESTING_WITHOUT_HARDWARE.md** — Test without wearable hardware
+- **docs/PILOT_PREP.md** — Pilot deployment checklist
+- **docs/TECHNICAL_STACK_SPEC.md** — API contracts, data formats
+- **docs/RESEARCH_PAPER.md** — Research paper (problem, solution, methodology, evaluation, references)

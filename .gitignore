@@ -12,6 +12,12 @@ env/
 .eggs/
 dist/
 build/
+.mypy_cache/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+coverage/
 
 # Node
 node_modules/
@@ -22,12 +28,16 @@ yarn-debug.log*
 # IDE
 .idea/
 .vscode/
+.cursor/
 *.swp
 *.swo
 
 # OS
 .DS_Store
 Thumbs.db
+
+# Firmware (PlatformIO)
+.pio/
 
 # Project specific
 backend/.env
