@@ -1,6 +1,6 @@
 /**
  * Industrial Wearable AI — Empty State
- * Phase 4.5: Icon + helpful message
+ * Phase 4.5: Icon + helpful message + optional steps
  */
 import { motion } from "framer-motion";
 
