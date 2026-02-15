@@ -1,0 +1,581 @@
+@startuml(System_Architecture_High_Level)
+!theme plain
+title Industrial Wearable AI — System Architecture (High-Level)
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+package "Factory / Shop Floor" {
+  actor "Worker" as worker
+  component "Wearable Node\n(ESP32 + MPU6050 + Temp)" as wearable
+}
+
+package "Edge (On-Prem)" {
+  component "Edge Gateway\n(Raspberry Pi / Laptop)" as edge
+  component "BLE Receiver\n+ Filter + Segment" as edge_ingest
+  component "Activity Classifier\n(ML Model)" as edge_ml
+}
+
+package "Backend" {
+  component "FastAPI\n(REST + WebSocket)" as api
+  database "PostgreSQL" as db
+}
+
+package "Client" {
+  component "Supervisor Dashboard\n(React)" as dashboard
+  actor "Supervisor" as supervisor
+}
+
+worker --> wearable : wears
+wearable --> edge : BLE (IMU + temp stream)
+edge_ingest --> edge_ml : feature vectors
+edge_ml --> api : POST /events (labels)
+api --> db : store events, aggregates
+dashboard --> api : HTTP / WebSocket
+api --> dashboard : live state, alerts
+supervisor --> dashboard : uses
+
+@enduml
+
+' ==============================================================================
+@startuml(Deployment_Diagram)
+!theme plain
+title Industrial Wearable AI — Deployment
+
+skinparam node {
+  backgroundColor #E8F4FD
+  borderColor #2E86AB
+}
+skinparam component {
+  backgroundColor #FFF9E6
+  borderColor #C9A227
+}
+skinparam database {
+  backgroundColor #E8F5E9
+  borderColor #388E3C
+}
+
+node "Wearable Device\n(Wrist)" as n_wearable {
+  component "ESP32 Firmware\n(Arduino/ESP-IDF)" as fw
+  component "MPU6050 Driver" as imu
+  component "DHT11/DS18B20" as temp
+  component "BLE GATT" as ble
+}
+
+node "Edge Gateway\n(Raspberry Pi 4 / Laptop)" as n_edge {
+  component "Python 3.10+" as py
+  component "bleak (BLE client)" as bleak
+  component "Filter + Segment" as pipe1
+  component "Activity Model\n(joblib)" as model
+  component "HTTP Client" as http
+}
+
+node "Backend Server\n(On-Prem / Cloud)" as n_backend {
+  component "FastAPI + Uvicorn" as api
+  component "WebSocket Hub" as ws
+  database "PostgreSQL" as db
+}
+
+node "Supervisor Browser" as n_browser {
+  component "React App" as react
+  component "WebSocket Client" as ws_client
+}
+
+n_wearable -[#blue]-> n_edge : BLE 4.2
+n_edge -[#green]-> n_backend : HTTP/WS (LAN)
+n_browser -[#green]-> n_backend : HTTPS / WebSocket
+
+@enduml
+
+' ==============================================================================
+@startuml(Sequence_End_to_End_Data_Flow)
+!theme plain
+title End-to-End Data Flow (Sequence)
+
+actor "Worker" as W
+participant "Wearable\n(ESP32)" as WE
+participant "Edge Gateway\n(Python)" as ED
+participant "Backend\n(FastAPI)" as BE
+database "PostgreSQL" as DB
+participant "Dashboard\n(React)" as UI
+actor "Supervisor" as S
+
+W->>WE: wears band, starts shift
+WE->>WE: sample IMU (25 Hz) + temp
+loop every ~100ms
+  WE->>ED: BLE: JSON {ax,ay,az,gx,gy,gz,temp}
+  ED->>ED: buffer, filter, segment (2-5s window)
+  ED->>ED: extract features, classify
+  ED->>BE: POST /api/events [labels]
+  BE->>DB: insert activity_events
+  BE->>UI: WebSocket broadcast (live state)
+  UI->>S: update worker state / alerts
+end
+
+S->>UI: open dashboard
+UI->>BE: GET /api/workers, WebSocket /ws/live
+BE->>UI: worker list, live states
+UI->>S: show "Who is idle / at risk"
+
+@enduml
+
+' ==============================================================================
+@startuml(Sequence_Edge_Processing_Pipeline)
+!theme plain
+title Edge Gateway — Processing Pipeline (Sequence)
+
+participant "BLE Stream" as BLE
+participant "Ingest" as IN
+participant "Filter" as FL
+participant "Segmenter" as SG
+participant "Feature\nExtractor" as FE
+participant "Activity\nModel" as ML
+participant "Rule Engine\n(Ergo/Fatigue)" as RULES
+participant "Backend API" as API
+
+BLE->>IN: raw samples (ax,ay,az,gx,gy,gz,temp)
+IN->>IN: validate, dedupe
+IN->>FL: time-series buffer
+
+FL->>FL: low-pass filter (e.g. 5-10 Hz)
+FL->>SG: filtered series
+
+SG->>SG: sliding window (2-5s, 50% overlap)
+loop per window
+  SG->>FE: window of samples
+  FE->>FE: mean, std, min, max, zero-crossing, etc.
+  FE->>ML: feature vector
+  ML->>ML: predict(label)
+  ML->>RULES: label + gyro/temp
+  RULES->>RULES: ergo risk? fatigue risk?
+  RULES->>API: POST /events [{ts, label, risk_ergo, risk_fatigue}]
+end
+
+@enduml
+
+' ==============================================================================
+@startuml(Sequence_Dashboard_Live_Update)
+!theme plain
+title Dashboard — Live Update Flow (Sequence)
+
+actor "Supervisor" as S
+participant "React App" as UI
+participant "WebSocket" as WS
+participant "FastAPI\nBackend" as API
+database "PostgreSQL" as DB
+
+S->>UI: open dashboard / live view
+UI->>API: GET /api/workers (list)
+API->>DB: query workers
+DB-->>API: workers
+API-->>UI: worker list
+
+UI->>API: WebSocket connect /ws/live
+API-->>UI: connection established
+
+loop edge sends events
+  note over API: receives POST /events from edge
+  API->>DB: store activity_events
+  API->>API: compute current state per worker
+  API->>WS: broadcast { worker_id, state, risk_ergo, risk_fatigue }
+  WS->>UI: push message
+  UI->>UI: update state, re-render
+  UI->>S: show updated badges / alerts
+end
+
+S->>UI: click "Shift summary"
+UI->>API: GET /api/sessions/{id}/summary
+API->>DB: query session_aggregates
+DB-->>API: aggregates
+API-->>UI: active_pct, idle_pct per worker
+UI-->>S: show table/chart
+
+@enduml
+
+' ==============================================================================
+@startuml(Activity_End_to_End_Pipeline)
+!theme plain
+title End-to-End Data Pipeline (Activity)
+
+start
+:Worker wears wristband;
+:Wearable powers on;
+
+repeat
+  :Sample IMU (25 Hz) + temp (0.2 Hz);
+  :Pack JSON {worker_id, ts, ax,ay,az, gx,gy,gz, temp};
+  :Send via BLE to Edge;
+  
+  :Edge: receive BLE packets;
+  :Edge: buffer raw samples;
+  :Edge: apply low-pass filter;
+  :Edge: build sliding windows (2-5s);
+  
+  repeat :for each window
+    :Extract features (mean, std, min, max, ...);
+    :Load activity model (joblib);
+    :Predict label (Sewing|Idle|Adjusting|Error|Break);
+    :Apply ergo/fatigue rules;
+    :POST /api/events to Backend;
+  repeat while (more windows?)
+  
+  :Backend: store activity_events;
+  :Backend: update session aggregates;
+  :Backend: WebSocket broadcast to Dashboard;
+  :Dashboard: update live worker states & alerts;
+  
+repeat while (shift ongoing?)
+
+stop
+
+@enduml
+
+' ==============================================================================
+@startuml(Activity_Edge_Processing_Detail)
+!theme plain
+title Edge — Processing Pipeline Detail (Activity)
+
+start
+:Receive BLE packet;
+
+if (valid JSON?) then (yes)
+  :Parse worker_id, ts, ax,ay,az, gx,gy,gz, temp;
+  :Append to ring buffer (time-series);
+else (no)
+  :Log & discard;
+  stop
+endif
+
+if (buffer has enough samples\nfor window (e.g. 2-5s)?) then (yes)
+  :Extract window with overlap;
+  :Apply noise filter (low-pass);
+  :Compute features:\n- per-axis mean, std, min, max\n- zero-crossing rate\n- optional: magnitude;
+  :Feature vector → Activity model;
+  :Model predicts: Sewing | Idle | Adjusting | Error | Break;
+  
+  if (ergo rules?) then (yes)
+    :Set risk_ergo = true;
+  endif
+  if (fatigue rules?) then (yes)
+    :Set risk_fatigue = true;
+  endif
+  
+  :Batch or send POST /api/events;
+else (no)
+  :Wait for more samples;
+endif
+stop
+
+@enduml
+
+' ==============================================================================
+@startuml(State_Activity_States)
+!theme plain
+title Activity States (Worker / Session)
+
+state "Sewing" as sewing : fast rhythmic motion\n(active work)
+state "Idle" as idle : no motion / blocked
+state "Adjusting" as adjusting : stop-start\n(fabric alignment)
+state "Error" as error : erratic motion\n(rework)
+state "Break" as break : intentional pause
+
+[*] --> sewing
+sewing --> idle : no motion > threshold
+sewing --> adjusting : pattern change
+sewing --> error : erratic detected
+sewing --> break : long pause
+
+idle --> sewing : motion resumes
+adjusting --> sewing : alignment done
+error --> sewing : rework done
+break --> sewing : break over
+
+idle --> break : supervisor / timer
+break --> idle : return (no motion yet)
+
+@enduml
+
+' ==============================================================================
+@startuml(State_Risk_States)
+!theme plain
+title Risk States (Ergo / Fatigue)
+
+state "Normal" as normal
+state "Ergonomic Risk" as ergo : wrist angle / static posture\nfor > threshold time
+state "Fatigue Risk" as fatigue : high idle % + high temp\nor long sustained work
+
+[*] --> normal
+normal --> ergo : posture rule triggered
+normal --> fatigue : fatigue rule triggered
+ergo --> normal : posture corrected / timeout
+fatigue --> normal : break / temp down
+
+@enduml
+
+' ==============================================================================
+@startuml(Use_Case_Diagram)
+!theme plain
+title Use Cases — Industrial Wearable AI
+
+left to right direction
+skinparam useCase {
+  backgroundColor #E3F2FD
+  borderColor #1976D2
+}
+
+actor "Worker" as worker
+actor "Supervisor" as supervisor
+actor "Factory Owner" as owner
+
+rectangle "Industrial Wearable AI Platform" {
+  usecase "Wear wristband\n(start shift)" as UC1
+  usecase "Stream IMU + temp\nvia BLE" as UC2
+  usecase "View live worker states\n(who is active/idle/at risk)" as UC3
+  usecase "View alerts\n(ergo / fatigue)" as UC4
+  usecase "View shift summary\n(active % per worker)" as UC5
+  usecase "View trends\n(productivity over time)" as UC6
+  usecase "Manage workers\n(assign device, role)" as UC7
+}
+
+worker --> UC1
+worker --> UC2
+UC1 ..> UC2 : includes
+
+supervisor --> UC3
+supervisor --> UC4
+supervisor --> UC5
+supervisor --> UC6
+
+owner --> UC7
+owner --> UC5
+owner --> UC6
+
+@enduml
+
+' ==============================================================================
+@startuml(Class_Backend_Entities)
+!theme plain
+title Backend — Main Entities (Class Diagram)
+
+skinparam classAttributeIconSize 0
+
+class Worker {
+  + id: UUID (PK)
+  + name: string
+  + role: string
+  + device_id: FK (nullable)
+  + created_at: timestamp
+}
+
+class Device {
+  + id: UUID (PK)
+  + hardware_id: string
+  + worker_id: FK (nullable)
+  + last_seen_at: timestamp
+}
+
+class Session {
+  + id: UUID (PK)
+  + worker_id: FK
+  + started_at: timestamp
+  + ended_at: timestamp (nullable)
+  + shift_label: string
+}
+
+class ActivityEvent {
+  + id: UUID (PK)
+  + session_id: FK
+  + ts: timestamp
+  + label: enum (sewing|idle|adjusting|error|break)
+  + risk_ergo: boolean
+  + risk_fatigue: boolean
+}
+
+class SessionAggregate {
+  + session_id: UUID (PK, FK)
+  + active_pct: float
+  + idle_pct: float
+  + adjusting_pct: float
+  + error_pct: float
+  + alert_count: int
+  + updated_at: timestamp
+}
+
+Worker "1" --> "0..1" Device : assigned_to
+Worker "1" --> "*" Session : has
+Session "1" --> "*" ActivityEvent : contains
+Session "1" --> "0..1" SessionAggregate : has_summary
+
+@enduml
+
+' ==============================================================================
+@startuml(Component_Detailed)
+!theme plain
+title Component Diagram — Detailed
+
+package "Wearable" {
+  [ESP32 Firmware] as FW
+  [MPU6050 Driver] as IMU
+  [Temp Sensor Driver] as TMP
+  [BLE GATT Server] as BLE
+  FW --> IMU
+  FW --> TMP
+  FW --> BLE
+}
+
+package "Edge Gateway" {
+  [BLE Client (bleak)] as EC
+  [Ingest & Buffer] as BUF
+  [Noise Filter] as NF
+  [Segmenter] as SEG
+  [Feature Extractor] as FEX
+  [Activity Model (joblib)] as AM
+  [Rule Engine] as RE
+  [HTTP Client] as HC
+  EC --> BUF
+  BUF --> NF
+  NF --> SEG
+  SEG --> FEX
+  FEX --> AM
+  AM --> RE
+  RE --> HC
+}
+
+package "Backend" {
+  [REST API (FastAPI)] as API
+  [WebSocket Hub] as WS
+  [Auth (JWT)] as AUTH
+  [Event Service] as EVT
+  [Aggregate Service] as AGG
+  [PostgreSQL] as DB
+  API --> AUTH
+  API --> EVT
+  API --> AGG
+  API --> WS
+  EVT --> DB
+  AGG --> DB
+}
+
+package "Dashboard" {
+  [React App] as RA
+  [WebSocket Client] as WSC
+  [Live View] as LV
+  [Alerts Panel] as AL
+  [Shift Summary] as SS
+  RA --> WSC
+  RA --> LV
+  RA --> AL
+  RA --> SS
+}
+
+FW -[#blue]-> EC : BLE
+HC -[#green]-> API : HTTP POST
+WSC -[#green]-> WS : WebSocket
+LV --> API : GET /workers
+SS --> API : GET /sessions/summary
+
+@enduml
+
+' ==============================================================================
+@startuml(Data_Flow_DFD_Style)
+!theme plain
+title Data Flow (DFD-Style)
+
+skinparam rectangle {
+  backgroundColor #E8F5E9
+  borderColor #2E7D32
+}
+skinparam storage {
+  backgroundColor #FFF3E0
+  borderColor #E65100
+}
+
+rectangle "1. Wearable" as P1 {
+  (Sample IMU + Temp) as S1
+  (Pack JSON) as S2
+  S1 --> S2
+}
+
+rectangle "2. Edge" as P2 {
+  (Receive BLE) as E1
+  (Filter + Segment) as E2
+  (Feature Extract) as E3
+  (Classify + Rules) as E4
+  E1 --> E2 --> E3 --> E4
+}
+
+rectangle "3. Backend" as P3 {
+  (Store Events) as B1
+  (Compute Aggregates) as B2
+  (Broadcast Live) as B3
+  B1 --> B2
+  B2 --> B3
+}
+
+rectangle "4. Dashboard" as P4 {
+  (Display Live States) as D1
+  (Display Alerts) as D2
+  (Display Summary) as D3
+}
+
+storage "activity_events" as ST1
+storage "session_aggregates" as ST2
+
+P1 --> P2 : BLE stream
+P2 --> P3 : POST /events
+P3 --> ST1 : insert
+P3 --> ST2 : update
+P3 --> P4 : WebSocket
+P4 --> P3 : GET /workers, /sessions
+
+@enduml
+
+' ==============================================================================
+@startuml(C4_Context_Simplified)
+!theme plain
+title C4 — System Context (Simplified)
+
+person "Worker" as worker
+person "Supervisor" as supervisor
+
+system "Industrial Wearable AI" as sys {
+  system "Wearable" as wear
+  system "Edge Gateway" as edge
+  system "Backend" as back
+  system "Dashboard" as dash
+}
+
+worker --> wear : wears, streams data
+wear --> edge : BLE
+edge --> back : HTTP/WS
+back --> dash : WebSocket / REST
+supervisor --> dash : uses
+
+@enduml
+
+' ==============================================================================
+@startuml(ML_Training_Flow)
+!theme plain
+title ML — Training & Deployment Flow
+
+rectangle "Offline (Training)" as OFF {
+  (Collect raw CSV\n+ video) as C1
+  (Label segments\nSewing|Idle|...) as C2
+  (Feature extraction\nfrom windows) as C3
+  (Train RF/XGBoost) as C4
+  (Evaluate: accuracy, F1) as C5
+  (Export joblib) as C6
+  C1 --> C2 --> C3 --> C4 --> C5 --> C6
+}
+
+rectangle "Edge (Inference)" as EDGE {
+  (Load joblib model) as L1
+  (Receive window) as L2
+  (Same features) as L3
+  (model.predict) as L4
+  L1 --> L2 --> L3 --> L4
+}
+
+C6 -[#green]-> L1 : deploy model file
+
+@enduml
