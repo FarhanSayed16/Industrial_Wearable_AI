@@ -1,0 +1,48 @@
+@startuml(Deployment_Diagram)
+!theme plain
+title Industrial Wearable AI — Deployment
+
+skinparam node {
+  backgroundColor #E8F4FD
+  borderColor #2E86AB
+}
+skinparam component {
+  backgroundColor #FFF9E6
+  borderColor #C9A227
+}
+skinparam database {
+  backgroundColor #E8F5E9
+  borderColor #388E3C
+}
+
+node "Wearable Device\n(Wrist)" as n_wearable {
+  component "ESP32 Firmware\n(Arduino/ESP-IDF)" as fw
+  component "MPU6050 Driver" as imu
+  component "DHT11/DS18B20" as temp
+  component "BLE GATT" as ble
+}
+
+node "Edge Gateway\n(Raspberry Pi 4 / Laptop)" as n_edge {
+  component "Python 3.10+" as py
+  component "bleak (BLE client)" as bleak
+  component "Filter + Segment" as pipe1
+  component "Activity Model\n(joblib)" as model
+  component "HTTP Client" as http
+}
+
+node "Backend Server\n(On-Prem / Cloud)" as n_backend {
+  component "FastAPI + Uvicorn" as api
+  component "WebSocket Hub" as ws
+  database "PostgreSQL" as db
+}
+
+node "Supervisor Browser" as n_browser {
+  component "React App" as react
+  component "WebSocket Client" as ws_client
+}
+
+n_wearable -[#blue]-> n_edge : BLE 4.2
+n_edge -[#green]-> n_backend : HTTP/WS (LAN)
+n_browser -[#green]-> n_backend : HTTPS / WebSocket
+
+@enduml
