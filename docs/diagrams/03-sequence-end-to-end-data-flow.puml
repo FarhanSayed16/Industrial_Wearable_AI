@@ -1,0 +1,30 @@
+@startuml(Sequence_End_to_End_Data_Flow)
+!theme plain
+title End-to-End Data Flow (Sequence)
+
+actor "Worker" as W
+participant "Wearable\n(ESP32)" as WE
+participant "Edge Gateway\n(Python)" as ED
+participant "Backend\n(FastAPI)" as BE
+database "PostgreSQL" as DB
+participant "Dashboard\n(React)" as UI
+actor "Supervisor" as S
+
+W->>WE: wears band, starts shift
+WE->>WE: sample IMU (25 Hz) + temp
+loop every ~100ms
+  WE->>ED: BLE: JSON {ax,ay,az,gx,gy,gz,temp}
+  ED->>ED: buffer, filter, segment (2-5s window)
+  ED->>ED: extract features, classify
+  ED->>BE: POST /api/events [labels]
+  BE->>DB: insert activity_events
+  BE->>UI: WebSocket broadcast (live state)
+  UI->>S: update worker state / alerts
+end
+
+S->>UI: open dashboard
+UI->>BE: GET /api/workers, WebSocket /ws/live
+BE->>UI: worker list, live states
+UI->>S: show "Who is idle / at risk"
+
+@enduml
