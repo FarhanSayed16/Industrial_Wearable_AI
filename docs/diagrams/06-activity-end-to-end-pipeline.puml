@@ -1,0 +1,36 @@
+@startuml(Activity_End_to_End_Pipeline)
+!theme plain
+title End-to-End Data Pipeline (Activity)
+
+start
+:Worker wears wristband;
+:Wearable powers on;
+
+repeat
+  :Sample IMU (25 Hz) + temp (0.2 Hz);
+  :Pack JSON {worker_id, ts, ax,ay,az, gx,gy,gz, temp};
+  :Send via BLE to Edge;
+  
+  :Edge: receive BLE packets;
+  :Edge: buffer raw samples;
+  :Edge: apply low-pass filter;
+  :Edge: build sliding windows (2-5s);
+  
+  repeat :for each window
+    :Extract features (mean, std, min, max, ...);
+    :Load activity model (joblib);
+    :Predict label (Sewing|Idle|Adjusting|Error|Break);
+    :Apply ergo/fatigue rules;
+    :POST /api/events to Backend;
+  repeat while (more windows?)
+  
+  :Backend: store activity_events;
+  :Backend: update session aggregates;
+  :Backend: WebSocket broadcast to Dashboard;
+  :Dashboard: update live worker states & alerts;
+  
+repeat while (shift ongoing?)
+
+stop
+
+@enduml
