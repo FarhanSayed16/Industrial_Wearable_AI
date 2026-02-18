@@ -1,0 +1,25 @@
+@startuml(State_Activity_States)
+!theme plain
+title Activity States (Worker / Session)
+
+state "Sewing" as sewing : fast rhythmic motion\n(active work)
+state "Idle" as idle : no motion / blocked
+state "Adjusting" as adjusting : stop-start\n(fabric alignment)
+state "Error" as error : erratic motion\n(rework)
+state "Break" as break : intentional pause
+
+[*] --> sewing
+sewing --> idle : no motion > threshold
+sewing --> adjusting : pattern change
+sewing --> error : erratic detected
+sewing --> break : long pause
+
+idle --> sewing : motion resumes
+adjusting --> sewing : alignment done
+error --> sewing : rework done
+break --> sewing : break over
+
+idle --> break : supervisor / timer
+break --> idle : return (no motion yet)
+
+@enduml
