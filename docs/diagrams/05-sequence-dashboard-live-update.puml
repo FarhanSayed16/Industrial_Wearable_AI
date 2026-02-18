@@ -1,0 +1,37 @@
+@startuml(Sequence_Dashboard_Live_Update)
+!theme plain
+title Dashboard — Live Update Flow (Sequence)
+
+actor "Supervisor" as S
+participant "React App" as UI
+participant "WebSocket" as WS
+participant "FastAPI\nBackend" as API
+database "PostgreSQL" as DB
+
+S->>UI: open dashboard / live view
+UI->>API: GET /api/workers (list)
+API->>DB: query workers
+DB-->>API: workers
+API-->>UI: worker list
+
+UI->>API: WebSocket connect /ws/live
+API-->>UI: connection established
+
+loop edge sends events
+  note over API: receives POST /events from edge
+  API->>DB: store activity_events
+  API->>API: compute current state per worker
+  API->>WS: broadcast { worker_id, state, risk_ergo, risk_fatigue }
+  WS->>UI: push message
+  UI->>UI: update state, re-render
+  UI->>S: show updated badges / alerts
+end
+
+S->>UI: click "Shift summary"
+UI->>API: GET /api/sessions/{id}/summary
+API->>DB: query session_aggregates
+DB-->>API: aggregates
+API-->>UI: active_pct, idle_pct per worker
+UI-->>S: show table/chart
+
+@enduml
