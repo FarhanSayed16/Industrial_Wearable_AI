@@ -1,0 +1,36 @@
+@startuml(Activity_Edge_Processing_Detail)
+!theme plain
+title Edge — Processing Pipeline Detail (Activity)
+
+start
+:Receive BLE packet;
+
+if (valid JSON?) then (yes)
+  :Parse worker_id, ts, ax,ay,az, gx,gy,gz, temp;
+  :Append to ring buffer (time-series);
+else (no)
+  :Log & discard;
+  stop
+endif
+
+if (buffer has enough samples\nfor window (e.g. 2-5s)?) then (yes)
+  :Extract window with overlap;
+  :Apply noise filter (low-pass);
+  :Compute features:\n- per-axis mean, std, min, max\n- zero-crossing rate\n- optional: magnitude;
+  :Feature vector → Activity model;
+  :Model predicts: Sewing | Idle | Adjusting | Error | Break;
+  
+  if (ergo rules?) then (yes)
+    :Set risk_ergo = true;
+  endif
+  if (fatigue rules?) then (yes)
+    :Set risk_fatigue = true;
+  endif
+  
+  :Batch or send POST /api/events;
+else (no)
+  :Wait for more samples;
+endif
+stop
+
+@enduml
