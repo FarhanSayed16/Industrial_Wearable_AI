@@ -1,0 +1,52 @@
+@startuml(Data_Flow_DFD_Style)
+!theme plain
+title Data Flow (DFD-Style)
+
+skinparam rectangle {
+  backgroundColor #E8F5E9
+  borderColor #2E7D32
+}
+skinparam storage {
+  backgroundColor #FFF3E0
+  borderColor #E65100
+}
+
+rectangle "1. Wearable" as P1 {
+  (Sample IMU + Temp) as S1
+  (Pack JSON) as S2
+  S1 --> S2
+}
+
+rectangle "2. Edge" as P2 {
+  (Receive BLE) as E1
+  (Filter + Segment) as E2
+  (Feature Extract) as E3
+  (Classify + Rules) as E4
+  E1 --> E2 --> E3 --> E4
+}
+
+rectangle "3. Backend" as P3 {
+  (Store Events) as B1
+  (Compute Aggregates) as B2
+  (Broadcast Live) as B3
+  B1 --> B2
+  B2 --> B3
+}
+
+rectangle "4. Dashboard" as P4 {
+  (Display Live States) as D1
+  (Display Alerts) as D2
+  (Display Summary) as D3
+}
+
+storage "activity_events" as ST1
+storage "session_aggregates" as ST2
+
+P1 --> P2 : BLE stream
+P2 --> P3 : POST /events
+P3 --> ST1 : insert
+P3 --> ST2 : update
+P3 --> P4 : WebSocket
+P4 --> P3 : GET /workers, /sessions
+
+@enduml
