@@ -1,0 +1,21 @@
+@startuml(C4_Context_Simplified)
+!theme plain
+title C4 — System Context (Simplified)
+
+person "Worker" as worker
+person "Supervisor" as supervisor
+
+system "Industrial Wearable AI" as sys {
+  system "Wearable" as wear
+  system "Edge Gateway" as edge
+  system "Backend" as back
+  system "Dashboard" as dash
+}
+
+worker --> wear : wears, streams data
+wear --> edge : BLE
+edge --> back : HTTP/WS
+back --> dash : WebSocket / REST
+supervisor --> dash : uses
+
+@enduml
