@@ -1,0 +1,54 @@
+@startuml(Class_Backend_Entities)
+!theme plain
+title Backend — Main Entities (Class Diagram)
+
+skinparam classAttributeIconSize 0
+
+class Worker {
+  + id: UUID (PK)
+  + name: string
+  + role: string
+  + device_id: FK (nullable)
+  + created_at: timestamp
+}
+
+class Device {
+  + id: UUID (PK)
+  + hardware_id: string
+  + worker_id: FK (nullable)
+  + last_seen_at: timestamp
+}
+
+class Session {
+  + id: UUID (PK)
+  + worker_id: FK
+  + started_at: timestamp
+  + ended_at: timestamp (nullable)
+  + shift_label: string
+}
+
+class ActivityEvent {
+  + id: UUID (PK)
+  + session_id: FK
+  + ts: timestamp
+  + label: enum (sewing|idle|adjusting|error|break)
+  + risk_ergo: boolean
+  + risk_fatigue: boolean
+}
+
+class SessionAggregate {
+  + session_id: UUID (PK, FK)
+  + active_pct: float
+  + idle_pct: float
+  + adjusting_pct: float
+  + error_pct: float
+  + alert_count: int
+  + updated_at: timestamp
+}
+
+Worker "1" --> "0..1" Device : assigned_to
+Worker "1" --> "*" Session : has
+Session "1" --> "*" ActivityEvent : contains
+Session "1" --> "0..1" SessionAggregate : has_summary
+
+@enduml
