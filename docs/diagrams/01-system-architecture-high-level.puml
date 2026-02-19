@@ -1,0 +1,38 @@
+@startuml(System_Architecture_High_Level)
+!theme plain
+title Industrial Wearable AI — System Architecture (High-Level)
+
+skinparam componentStyle rectangle
+skinparam backgroundColor #FEFEFE
+
+package "Factory / Shop Floor" {
+  actor "Worker" as worker
+  component "Wearable Node\n(ESP32 + MPU6050 + Temp)" as wearable
+}
+
+package "Edge (On-Prem)" {
+  component "Edge Gateway\n(Raspberry Pi / Laptop)" as edge
+  component "BLE Receiver\n+ Filter + Segment" as edge_ingest
+  component "Activity Classifier\n(ML Model)" as edge_ml
+}
+
+package "Backend" {
+  component "FastAPI\n(REST + WebSocket)" as api
+  database "PostgreSQL" as db
+}
+
+package "Client" {
+  component "Supervisor Dashboard\n(React)" as dashboard
+  actor "Supervisor" as supervisor
+}
+
+worker --> wearable : wears
+wearable --> edge : BLE (IMU + temp stream)
+edge_ingest --> edge_ml : feature vectors
+edge_ml --> api : POST /events (labels)
+api --> db : store events, aggregates
+dashboard --> api : HTTP / WebSocket
+api --> dashboard : live state, alerts
+supervisor --> dashboard : uses
+
+@enduml
