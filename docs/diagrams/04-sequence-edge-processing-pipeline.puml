@@ -1,0 +1,32 @@
+@startuml(Sequence_Edge_Processing_Pipeline)
+!theme plain
+title Edge Gateway — Processing Pipeline (Sequence)
+
+participant "BLE Stream" as BLE
+participant "Ingest" as IN
+participant "Filter" as FL
+participant "Segmenter" as SG
+participant "Feature\nExtractor" as FE
+participant "Activity\nModel" as ML
+participant "Rule Engine\n(Ergo/Fatigue)" as RULES
+participant "Backend API" as API
+
+BLE->>IN: raw samples (ax,ay,az,gx,gy,gz,temp)
+IN->>IN: validate, dedupe
+IN->>FL: time-series buffer
+
+FL->>FL: low-pass filter (e.g. 5-10 Hz)
+FL->>SG: filtered series
+
+SG->>SG: sliding window (2-5s, 50% overlap)
+loop per window
+  SG->>FE: window of samples
+  FE->>FE: mean, std, min, max, zero-crossing, etc.
+  FE->>ML: feature vector
+  ML->>ML: predict(label)
+  ML->>RULES: label + gyro/temp
+  RULES->>RULES: ergo risk? fatigue risk?
+  RULES->>API: POST /events [{ts, label, risk_ergo, risk_fatigue}]
+end
+
+@enduml
