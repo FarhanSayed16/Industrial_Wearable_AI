@@ -1,0 +1,25 @@
+@startuml(ML_Training_Flow)
+!theme plain
+title ML — Training & Deployment Flow
+
+rectangle "Offline (Training)" as OFF {
+  (Collect raw CSV\n+ video) as C1
+  (Label segments\nSewing|Idle|...) as C2
+  (Feature extraction\nfrom windows) as C3
+  (Train RF/XGBoost) as C4
+  (Evaluate: accuracy, F1) as C5
+  (Export joblib) as C6
+  C1 --> C2 --> C3 --> C4 --> C5 --> C6
+}
+
+rectangle "Edge (Inference)" as EDGE {
+  (Load joblib model) as L1
+  (Receive window) as L2
+  (Same features) as L3
+  (model.predict) as L4
+  L1 --> L2 --> L3 --> L4
+}
+
+C6 -[#green]-> L1 : deploy model file
+
+@enduml
