@@ -1,0 +1,38 @@
+@startuml(Use_Case_Diagram)
+!theme plain
+title Use Cases — Industrial Wearable AI
+
+left to right direction
+skinparam useCase {
+  backgroundColor #E3F2FD
+  borderColor #1976D2
+}
+
+actor "Worker" as worker
+actor "Supervisor" as supervisor
+actor "Factory Owner" as owner
+
+rectangle "Industrial Wearable AI Platform" {
+  usecase "Wear wristband\n(start shift)" as UC1
+  usecase "Stream IMU + temp\nvia BLE" as UC2
+  usecase "View live worker states\n(who is active/idle/at risk)" as UC3
+  usecase "View alerts\n(ergo / fatigue)" as UC4
+  usecase "View shift summary\n(active % per worker)" as UC5
+  usecase "View trends\n(productivity over time)" as UC6
+  usecase "Manage workers\n(assign device, role)" as UC7
+}
+
+worker --> UC1
+worker --> UC2
+UC1 ..> UC2 : includes
+
+supervisor --> UC3
+supervisor --> UC4
+supervisor --> UC5
+supervisor --> UC6
+
+owner --> UC7
+owner --> UC5
+owner --> UC6
+
+@enduml
