@@ -1,0 +1,66 @@
+@startuml(Component_Detailed)
+!theme plain
+title Component Diagram — Detailed
+
+package "Wearable" {
+  [ESP32 Firmware] as FW
+  [MPU6050 Driver] as IMU
+  [Temp Sensor Driver] as TMP
+  [BLE GATT Server] as BLE
+  FW --> IMU
+  FW --> TMP
+  FW --> BLE
+}
+
+package "Edge Gateway" {
+  [BLE Client (bleak)] as EC
+  [Ingest & Buffer] as BUF
+  [Noise Filter] as NF
+  [Segmenter] as SEG
+  [Feature Extractor] as FEX
+  [Activity Model (joblib)] as AM
+  [Rule Engine] as RE
+  [HTTP Client] as HC
+  EC --> BUF
+  BUF --> NF
+  NF --> SEG
+  SEG --> FEX
+  FEX --> AM
+  AM --> RE
+  RE --> HC
+}
+
+package "Backend" {
+  [REST API (FastAPI)] as API
+  [WebSocket Hub] as WS
+  [Auth (JWT)] as AUTH
+  [Event Service] as EVT
+  [Aggregate Service] as AGG
+  [PostgreSQL] as DB
+  API --> AUTH
+  API --> EVT
+  API --> AGG
+  API --> WS
+  EVT --> DB
+  AGG --> DB
+}
+
+package "Dashboard" {
+  [React App] as RA
+  [WebSocket Client] as WSC
+  [Live View] as LV
+  [Alerts Panel] as AL
+  [Shift Summary] as SS
+  RA --> WSC
+  RA --> LV
+  RA --> AL
+  RA --> SS
+}
+
+FW -[#blue]-> EC : BLE
+HC -[#green]-> API : HTTP POST
+WSC -[#green]-> WS : WebSocket
+LV --> API : GET /workers
+SS --> API : GET /sessions/summary
+
+@enduml
