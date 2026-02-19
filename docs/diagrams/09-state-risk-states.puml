@@ -1,0 +1,15 @@
+@startuml(State_Risk_States)
+!theme plain
+title Risk States (Ergo / Fatigue)
+
+state "Normal" as normal
+state "Ergonomic Risk" as ergo : wrist angle / static posture\nfor > threshold time
+state "Fatigue Risk" as fatigue : high idle % + high temp\nor long sustained work
+
+[*] --> normal
+normal --> ergo : posture rule triggered
+normal --> fatigue : fatigue rule triggered
+ergo --> normal : posture corrected / timeout
+fatigue --> normal : break / temp down
+
+@enduml
