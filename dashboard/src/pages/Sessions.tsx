@@ -103,16 +103,20 @@ export default function Sessions() {
   const [error, setError] = useState<string | null>(null);
   const [dateFilter, setDateFilter] = useState<DateFilter>("all");
 
-  const loadSessions = useCallback(() => {
+  const { pathname } = useLocation();
+
+  const loadSessions = useCallback(async () => {
     setLoading(true);
     setError(null);
-    getSessions()
-      .then(setSessions)
-      .catch((e) => setError(e?.message ?? "Failed to load sessions"))
-      .finally(() => setLoading(false));
+    try {
+      const data = await getSessions();
+      setSessions(data);
+    } catch (e: unknown) {
+      setError((e as Error)?.message ?? "Failed to load sessions");
+    } finally {
+      setLoading(false);
+    }
   }, []);
-
-  const { pathname } = useLocation();
 
   useEffect(() => {
     loadSessions();
@@ -129,10 +133,17 @@ export default function Sessions() {
       setSummary(null);
       return;
     }
-    setSummary(null);
-    getSessionSummary(selectedId)
-      .then(setSummary)
-      .catch((e) => setError(e?.message ?? "Failed to load summary"));
+    let cancelled = false;
+    (async () => {
+      setSummary(null);
+      try {
+        const data = await getSessionSummary(selectedId);
+        if (!cancelled) setSummary(data);
+      } catch (e: unknown) {
+        if (!cancelled) setError((e as Error)?.message ?? "Failed to load summary");
+      }
+    })();
+    return () => { cancelled = true; };
   }, [selectedId]);
 
   if (loading) {
@@ -160,83 +171,83 @@ export default function Sessions() {
 
   return (
     <div className="sessions-grid">
-        <div className="card sessions-list-card">
-          <div className="sessions-list-header">
-            <h3 style={{ margin: 0, fontSize: "0.875rem", color: "#64748b" }}>
-              Sessions
-            </h3>
-            <select
-              value={dateFilter}
-              onChange={(e) => setDateFilter(e.target.value as DateFilter)}
-              className="sessions-date-filter"
-              aria-label="Filter by date"
-            >
-              <option value="all">All dates</option>
-              <option value="today">Today</option>
-              <option value="yesterday">Yesterday</option>
-              <option value="7d">Last 7 days</option>
-              <option value="30d">Last 30 days</option>
-            </select>
-          </div>
-          {sessions.length === 0 ? (
-            <EmptyState
-              icon={<Calendar />}
-              title="No sessions yet"
-              message="Run the edge or simulator to create sessions."
-            />
-          ) : filteredSessions.length === 0 ? (
-            <EmptyState
-              icon={<Calendar />}
-              title="No sessions in range"
-              message="No sessions match the selected date filter."
-            />
-          ) : (
-            <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
-              {filteredSessions.map((s) => (
-                <li key={s.id}>
-                  <button
-                    type="button"
-                    onClick={() => setSelectedId(s.id)}
-                    style={{
-                      width: "100%",
-                      textAlign: "left",
-                      padding: "0.75rem",
-                      marginBottom: "0.25rem",
-                      border: "1px solid #e2e8f0",
-                      borderRadius: 6,
-                      background: selectedId === s.id ? "#eff6ff" : "#fff",
-                      cursor: "pointer",
-                      fontSize: "0.875rem",
-                    }}
-                  >
-                    <div style={{ fontWeight: 600 }}>
-                      {s.worker_name ?? s.worker_id ?? "Unknown"}
-                    </div>
-                    <div style={{ color: "#64748b", fontSize: "0.75rem" }}>
-                      {formatDate(s.started_at)}
-                    </div>
-                  </button>
-                </li>
-              ))}
-            </ul>
-          )}
+      <div className="card sessions-list-card">
+        <div className="sessions-list-header">
+          <h3 style={{ margin: 0, fontSize: "0.875rem", color: "#64748b" }}>
+            Sessions
+          </h3>
+          <select
+            value={dateFilter}
+            onChange={(e) => setDateFilter(e.target.value as DateFilter)}
+            className="sessions-date-filter"
+            aria-label="Filter by date"
+          >
+            <option value="all">All dates</option>
+            <option value="today">Today</option>
+            <option value="yesterday">Yesterday</option>
+            <option value="7d">Last 7 days</option>
+            <option value="30d">Last 30 days</option>
+          </select>
         </div>
+        {sessions.length === 0 ? (
+          <EmptyState
+            icon={<Calendar />}
+            title="No sessions yet"
+            message="Run the edge or simulator to create sessions."
+          />
+        ) : filteredSessions.length === 0 ? (
+          <EmptyState
+            icon={<Calendar />}
+            title="No sessions in range"
+            message="No sessions match the selected date filter."
+          />
+        ) : (
+          <ul style={{ listStyle: "none", margin: 0, padding: 0 }}>
+            {filteredSessions.map((s) => (
+              <li key={s.id}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedId(s.id)}
+                  style={{
+                    width: "100%",
+                    textAlign: "left",
+                    padding: "0.75rem",
+                    marginBottom: "0.25rem",
+                    border: "1px solid #e2e8f0",
+                    borderRadius: 6,
+                    background: selectedId === s.id ? "#eff6ff" : "#fff",
+                    cursor: "pointer",
+                    fontSize: "0.875rem",
+                  }}
+                >
+                  <div style={{ fontWeight: 600 }}>
+                    {s.worker_name ?? s.worker_id ?? "Unknown"}
+                  </div>
+                  <div style={{ color: "#64748b", fontSize: "0.75rem" }}>
+                    {formatDate(s.started_at)}
+                  </div>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
 
-        <div>
-          {selectedId && summary ? (
-            <SummaryTable summary={summary} />
-          ) : selectedId ? (
-            <div style={{ padding: "2rem", color: "#64748b" }}>
-              Loading summary...
-            </div>
-          ) : (
-            <EmptyState
-              icon={<FileText />}
-              title="Select a session"
-              message="Choose a session from the list to view its activity summary."
-            />
-          )}
-        </div>
+      <div>
+        {selectedId && summary ? (
+          <SummaryTable summary={summary} />
+        ) : selectedId ? (
+          <div style={{ padding: "2rem", color: "#64748b" }}>
+            Loading summary...
+          </div>
+        ) : (
+          <EmptyState
+            icon={<FileText />}
+            title="Select a session"
+            message="Choose a session from the list to view its activity summary."
+          />
+        )}
+      </div>
     </div>
   );
 }
