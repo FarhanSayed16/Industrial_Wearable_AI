@@ -82,7 +82,7 @@ export default function LiveView() {
   const sampleOnly = useMemo(() => workers.filter((w) => w.isSample), [workers]);
 
   const filteredLive = useMemo(() => {
-    let list = liveOnly.filter((w) => {
+    const list = liveOnly.filter((w) => {
       if (viewTab === "working" && !isWorking(w.current_state)) return false;
       if (viewTab === "idle" && !isIdle(w.current_state)) return false;
       if (viewTab === "at_risk" && !isAtRisk(w)) return false;
@@ -99,7 +99,7 @@ export default function LiveView() {
   }, [liveOnly, viewTab, stateFilter, riskFilter, searchQuery, sortBy]);
 
   const filteredSample = useMemo(() => {
-    let list = sampleOnly.filter((w) => {
+    const list = sampleOnly.filter((w) => {
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase().trim();
         if (!w.name.toLowerCase().includes(q) && !w.worker_id.toLowerCase().includes(q)) return false;
@@ -177,10 +177,10 @@ export default function LiveView() {
                 <span className="live-section-meta">
                   {lastUpdate
                     ? (() => {
-                        const sec = (Date.now() - lastUpdate) / 1000;
-                        const ago = sec < 10 ? "just now" : sec < 60 ? `${Math.floor(sec)}s ago` : `${Math.floor(sec / 60)}m ago`;
-                        return <>last update {ago}</>;
-                      })()
+                      const sec = (Date.now() - lastUpdate) / 1000;
+                      const ago = sec < 10 ? "just now" : sec < 60 ? `${Math.floor(sec)}s ago` : `${Math.floor(sec / 60)}m ago`;
+                      return <>last update {ago}</>;
+                    })()
                     : "—"}
                 </span>
               )}
@@ -261,7 +261,7 @@ export default function LiveView() {
             <h2 id="charts-heading" className="live-section-heading live-section-heading--muted">Charts (live feed)</h2>
             <div className="live-charts-grid">
               <div className="live-chart-card">
-                <StateDonutLive workers={liveOnly} />
+                <StateDonutLive workers={workers} />
               </div>
               <div className="live-chart-card">
                 <ActivityTimelineChart events={activityTimeline} />
