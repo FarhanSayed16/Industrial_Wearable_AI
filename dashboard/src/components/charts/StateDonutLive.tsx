@@ -10,7 +10,7 @@ import {
   ResponsiveContainer,
   Legend,
 } from "recharts";
-import type { WorkerState } from "../../hooks/useWebSocket";
+
 
 const STATE_COLORS: Record<string, string> = {
   sewing: "#22c55e",
@@ -28,7 +28,7 @@ const STATE_LABELS: Record<string, string> = {
   break: "Break",
 };
 
-export default function StateDonutLive({ workers }: { workers: WorkerState[] }) {
+export default function StateDonutLive({ workers }: { workers: { current_state: string }[] }) {
   const data = Object.entries(
     workers.reduce<Record<string, number>>((acc, w) => {
       const s = w.current_state || "idle";
