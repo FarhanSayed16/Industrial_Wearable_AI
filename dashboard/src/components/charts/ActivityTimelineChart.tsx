@@ -2,7 +2,7 @@
  * Industrial Wearable AI — Activity Timeline
  * Live (10 min) or historical (1h, 6h, 24h) with time range selector.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   AreaChart,
   Area,
@@ -60,23 +60,48 @@ export default function ActivityTimelineChart({ events }: { events: ActivityEven
   const [timeRange, setTimeRange] = useState<TimelineRange>("10m");
   const [historicalData, setHistoricalData] = useState<{ minute: string; sewing: number; adjusting: number; idle: number; break: number; error: number }[] | null>(null);
   const [historicalLoading, setHistoricalLoading] = useState(false);
+  const didAutoFallback = useRef(false);
 
   const liveData = useMemo(() => bucketByMinute(events, WINDOW_MS_10M), [events]);
+
+  // Auto-switch to "1h" if the live buffer is empty after a short delay (first page load)
+  useEffect(() => {
+    if (didAutoFallback.current) return;
+    const timer = setTimeout(() => {
+      if (didAutoFallback.current) return;
+      const hasLiveData = events.length > 0;
+      if (!hasLiveData && timeRange === "10m") {
+        didAutoFallback.current = true;
+        setTimeRange("1h");
+      } else {
+        didAutoFallback.current = true;
+      }
+    }, 3000); // wait 3s for live data to arrive before falling back
+    return () => clearTimeout(timer);
+  }, [events, timeRange]);
 
   useEffect(() => {
     if (timeRange === "10m") {
       setHistoricalData(null);
       return;
     }
+    let cancelled = false;
     const now = Date.now();
     const ms = timeRange === "1h" ? 60 * 60 * 1000 : timeRange === "6h" ? 6 * 60 * 60 * 1000 : 24 * 60 * 60 * 1000;
     const fromTs = now - ms;
     const bucketMinutes = timeRange === "1h" ? 1 : timeRange === "6h" ? 5 : 15;
-    setHistoricalLoading(true);
-    getActivityTimeline(fromTs, now, bucketMinutes)
-      .then((data) => setHistoricalData(data))
-      .catch(() => setHistoricalData([]))
-      .finally(() => setHistoricalLoading(false));
+    (async () => {
+      setHistoricalLoading(true);
+      try {
+        const data = await getActivityTimeline(fromTs, now, bucketMinutes);
+        if (!cancelled) setHistoricalData(data);
+      } catch {
+        if (!cancelled) setHistoricalData([]);
+      } finally {
+        if (!cancelled) setHistoricalLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [timeRange]);
 
   const data = timeRange === "10m" ? liveData : historicalData ?? [];
@@ -120,7 +145,7 @@ export default function ActivityTimelineChart({ events }: { events: ActivityEven
                 borderRadius: "var(--radius-md)",
                 border: "1px solid var(--color-border)",
               }}
-              formatter={(value: number) => [value, ""]}
+              formatter={(value: number | undefined) => [value ?? 0, ""]}
               labelFormatter={(label) => `Time: ${label}`}
             />
             {STATE_ORDER.map((state) => (
