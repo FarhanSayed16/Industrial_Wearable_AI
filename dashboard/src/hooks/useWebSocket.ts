@@ -4,7 +4,7 @@
  * Auto-reconnects on disconnect with exponential backoff.
  * Buffers last 10 min of updates for activity timeline and alerts trend.
  */
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export interface WorkerState {
   worker_id: string;
@@ -91,9 +91,10 @@ export function useWebSocket() {
         try {
           const raw = JSON.parse(event.data) as Record<string, unknown>;
           if (raw.type === "sensor" && typeof raw.worker_id === "string" && mounted) {
+            const wId = raw.worker_id as string;
             setSensorByWorker((prev) => ({
               ...prev,
-              [raw.worker_id]: {
+              [wId]: {
                 temp: typeof raw.temp === "number" ? raw.temp : undefined,
                 accel_mag: typeof raw.accel_mag === "number" ? raw.accel_mag : undefined,
                 ts: typeof raw.ts === "number" ? raw.ts : Date.now(),
@@ -103,14 +104,15 @@ export function useWebSocket() {
           }
 
           if (raw.type === "device_status" && typeof raw.worker_id === "string" && mounted) {
+            const wId = raw.worker_id as string;
             setMpuConnectedByWorker((prev) => ({
               ...prev,
-              [raw.worker_id]: raw.mpu_connected === true,
+              [wId]: raw.mpu_connected === true,
             }));
             return;
           }
 
-          const msg = raw as WorkerState;
+          const msg = raw as unknown as WorkerState;
           if (msg.worker_id && mounted) {
             const ts = msg.updated_at ?? Date.now();
             const risk = !!(msg.risk_ergo || msg.risk_fatigue);
@@ -157,10 +159,19 @@ export function useWebSocket() {
     };
   }, []);
 
-  const activityTimeline = useMemo(() => {
+  const [activityTimeline, setActivityTimeline] = useState<ActivityEvent[]>([]);
+
+  const refreshTimeline = useCallback(() => {
     const now = Date.now();
-    return [...timelineRef.current].filter((e) => now - e.ts <= TIMELINE_WINDOW_MS);
-  }, [workers]);
+    setActivityTimeline(
+      [...timelineRef.current].filter((e) => now - e.ts <= TIMELINE_WINDOW_MS)
+    );
+  }, []);
+
+  // Refresh timeline when workers change (i.e. new WebSocket message arrived)
+  useEffect(() => {
+    refreshTimeline();
+  }, [workers, refreshTimeline]);
 
   return {
     workers: Object.values(workers),
