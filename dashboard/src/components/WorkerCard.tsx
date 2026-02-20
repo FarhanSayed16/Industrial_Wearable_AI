@@ -89,11 +89,19 @@ export default function WorkerCard({
 
   useEffect(() => {
     if (!isSample || !historyExpanded) return;
-    setHistoryLoading(true);
-    getWorkerHistory(name, 20)
-      .then(setHistory)
-      .catch(() => setHistory([]))
-      .finally(() => setHistoryLoading(false));
+    let cancelled = false;
+    (async () => {
+      setHistoryLoading(true);
+      try {
+        const data = await getWorkerHistory(name, 20);
+        if (!cancelled) setHistory(data);
+      } catch {
+        if (!cancelled) setHistory([]);
+      } finally {
+        if (!cancelled) setHistoryLoading(false);
+      }
+    })();
+    return () => { cancelled = true; };
   }, [isSample, historyExpanded, name]);
 
   const stateColor = stateColors[current_state] ?? "var(--color-warning)";
