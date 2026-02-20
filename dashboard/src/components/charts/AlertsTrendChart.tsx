@@ -54,7 +54,7 @@ export default function AlertsTrendChart({ events }: { events: ActivityEvent[] }
               borderRadius: "var(--radius-md)",
               border: "1px solid var(--color-border)",
             }}
-            formatter={(value: number) => [value, "Alerts"]}
+            formatter={(value: number | undefined) => [value ?? 0, "Alerts"]}
             labelFormatter={(label) => `Time: ${label}`}
           />
           <Bar dataKey="alerts" fill="var(--color-error)" radius={[4, 4, 0, 0]} name="Alerts" />
