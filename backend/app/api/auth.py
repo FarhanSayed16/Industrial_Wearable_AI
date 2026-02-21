@@ -4,9 +4,11 @@ POST /api/auth/login, POST /api/auth/register, POST /api/auth/change-password, G
 """
 from datetime import datetime, timedelta, timezone
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from jose import JWTError, jwt
-import bcrypt
+from argon2 import PasswordHasher
+from argon2.exceptions import VerifyMismatchError
+import uuid
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -21,21 +23,30 @@ from app.schemas.auth import (
     TokenResponse,
     UserResponse,
 )
+from app.redis_client import redis_client
 
 router = APIRouter(prefix="/api", tags=["auth"])
-
+ph = PasswordHasher()
 
 def _hash_password(password: str) -> str:
-    return bcrypt.hashpw(password.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+    return ph.hash(password)
 
 
 def _verify_password(plain: str, hashed: str) -> bool:
-    return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+    try:
+        if hashed.startswith("$2b$"):
+            # Fallback for old bcrypt hashes created before Phase 7
+            import bcrypt
+            return bcrypt.checkpw(plain.encode("utf-8"), hashed.encode("utf-8"))
+        return ph.verify(hashed, plain)
+    except VerifyMismatchError:
+        return False
 
 
 def _create_access_token(subject: str) -> str:
+    jti = uuid.uuid4().hex
     expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
-    to_encode = {"sub": subject, "exp": expire}
+    to_encode = {"sub": subject, "exp": expire, "jti": jti}
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
 
@@ -85,3 +96,28 @@ async def change_password(
 async def get_me(user: User = Depends(get_current_user)):
     """Return current authenticated user."""
     return UserResponse(id=str(user.id), username=user.username)
+
+
+@router.post("/auth/logout")
+async def logout(request: Request, user: User = Depends(get_current_user)):
+    """Add the user's current JWT to the Redis blacklist."""
+    auth_header = request.headers.get("Authorization")
+    if not auth_header or not auth_header.startswith("Bearer "):
+        raise HTTPException(status_code=400, detail="Missing or invalid token")
+        
+    token = auth_header.split(" ")[1]
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        jti = payload.get("jti")
+        exp = payload.get("exp")
+        
+        if jti and exp:
+            # Calculate TTL for the key in Redis (time until token naturally expires)
+            now = int(datetime.now(timezone.utc).timestamp())
+            ttl = max(0, exp - now)
+            if ttl > 0:
+                await redis_client.setex(f"blacklist:{jti}", ttl, "blacklisted")
+    except JWTError:
+        pass # If token is invalid anyway, no need to blacklist
+        
+    return {"message": "Logged out successfully"}
