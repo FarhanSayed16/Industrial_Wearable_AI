@@ -9,6 +9,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.database import get_db
+from app.dependencies import verify_edge_api_key
 from app.models import ActivityEvent, ActivityLabel, Session, Worker
 from app.schemas import EventBatch
 from app.services.event_service import update_session_aggregate
@@ -30,7 +31,7 @@ def _label_from_str(s: str) -> ActivityLabel:
         return ActivityLabel.IDLE  # fallback
 
 
-@router.post("/events")
+@router.post("/events", dependencies=[Depends(verify_edge_api_key)])
 async def post_events(batch: EventBatch, db: AsyncSession = Depends(get_db)):
     """
     Accept EventBatch from edge. Resolve or create Worker (by name=worker_id for MVP).
