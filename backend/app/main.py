@@ -6,8 +6,12 @@ import time
 
 from fastapi import FastAPI, Request, WebSocket
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import Limiter, _rate_limit_exceeded_handler
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
-from app.api import activity, auth, events, live, sessions, workers
+from app.api import activity, analytics, auth, config, events, export, labels, live, notifications, sessions, workers, reports, privacy, compliance
 from app.config import CORS_ORIGINS
 from app.database import get_db
 from app.services.websocket_hub import ws_hub
@@ -24,6 +28,12 @@ app = FastAPI(
     description="Backend API for wearable activity monitoring",
     version="0.1.0",
 )
+
+# Setup SlowAPI Limiter
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"])
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+app.add_middleware(SlowAPIMiddleware)
 
 app.add_middleware(
     CORSMiddleware,
@@ -45,11 +55,19 @@ async def log_requests(request: Request, call_next):
 
 # Include routers
 app.include_router(auth.router)
+app.include_router(analytics.router)
+app.include_router(config.router)
 app.include_router(events.router)
+app.include_router(export.router)
+app.include_router(labels.router)
 app.include_router(live.router)
+app.include_router(notifications.router)
 app.include_router(workers.router)
 app.include_router(sessions.router)
 app.include_router(activity.router)
+app.include_router(reports.router)
+app.include_router(privacy.router)
+app.include_router(compliance.router)
 
 
 @app.get("/")
