@@ -27,13 +27,19 @@ async def seed_admin():
         result = await db.execute(stmt)
         existing = result.scalar_one_or_none()
         if existing:
-            print("Admin user already exists.")
+            if existing.role != "super_admin":
+                existing.role = "super_admin"
+                await db.commit()
+                print("Upgraded existing admin user to super_admin role.")
+            else:
+                print("Admin user already exists and is super_admin.")
             return
+
         hashed = _hash_password("admin123")
-        user = User(username="admin", hashed_password=hashed)
+        user = User(username="admin", hashed_password=hashed, role="super_admin")
         db.add(user)
         await db.commit()
-        print("Created admin user (username=admin, password=admin123)")
+        print("Created admin user (username=admin, password=admin123, role=super_admin)")
 
 
 if __name__ == "__main__":
