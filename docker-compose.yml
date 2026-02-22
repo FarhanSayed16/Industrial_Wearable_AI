@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: wearable_ai
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7-alpine
+    restart: always
+    ports:
+      - "6379:6379"
+
+  backend:
+    build:
+      context: ./backend
+    restart: always
+    depends_on:
+      - postgres
+      - redis
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://root:password@postgres:5432/wearable_ai
+      - REDIS_URL=redis://redis:6379/0
+      - JWT_SECRET=supersecret123
+      - EDGE_API_KEY=dev-edge-key-123
+    ports:
+      - "8000:8000"
+
+  celery-worker:
+    build:
+      context: ./backend
+    restart: always
+    command: celery -A app.celery.celery_app worker --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://root:password@postgres:5432/wearable_ai
+      - REDIS_URL=redis://redis:6379/0
+
+  celery-beat:
+    build:
+      context: ./backend
+    restart: always
+    command: celery -A app.celery.celery_app beat --loglevel=info
+    depends_on:
+      - redis
+    environment:
+      - DATABASE_URL=postgresql+asyncpg://root:password@postgres:5432/wearable_ai
+      - REDIS_URL=redis://redis:6379/0
+
+  dashboard:
+    build:
+      context: ./dashboard
+    restart: always
+    ports:
+      - "80:80"
+
+volumes:
+  pgdata:
