@@ -11,7 +11,7 @@ from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
 
-from app.api import activity, analytics, auth, config, events, export, labels, live, notifications, sessions, workers, reports, privacy, compliance
+from app.api import activity, analytics, auth, config, events, export, labels, live, notifications, sessions, workers, reports, privacy, compliance, nl_query
 from app.config import CORS_ORIGINS
 from app.database import get_db
 from app.services.websocket_hub import ws_hub
@@ -68,6 +68,7 @@ app.include_router(activity.router)
 app.include_router(reports.router)
 app.include_router(privacy.router)
 app.include_router(compliance.router)
+app.include_router(nl_query.router)
 
 
 @app.get("/")
