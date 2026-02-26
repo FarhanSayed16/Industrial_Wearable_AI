@@ -6,9 +6,10 @@ POST /api/live/device-status — MPU connected or not; broadcast so dashboard ca
 import time
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from app.dependencies import verify_edge_api_key
 from app.services.websocket_hub import ws_hub
 
 router = APIRouter(prefix="/api/live", tags=["live"])
@@ -22,7 +23,7 @@ class SensorSnapshot(BaseModel):
     accel_mag: Optional[float] = None
 
 
-@router.post("/sensor")
+@router.post("/sensor", dependencies=[Depends(verify_edge_api_key)])
 async def post_sensor(snapshot: SensorSnapshot):
     """
     Accept sensor snapshot from edge (temp, accel_mag). Broadcast to WebSocket clients
@@ -47,7 +48,7 @@ class DeviceStatus(BaseModel):
     mpu_connected: bool
 
 
-@router.post("/device-status")
+@router.post("/device-status", dependencies=[Depends(verify_edge_api_key)])
 async def post_device_status(status: DeviceStatus):
     """
     Edge posts when device reports mpu_connected true/false.
