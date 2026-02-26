@@ -14,6 +14,7 @@ from app.models.base import Base
 if TYPE_CHECKING:
     from app.models.device import Device
     from app.models.session import Session
+    from app.models.consent import ConsentRecord
 
 
 class Worker(Base):
@@ -46,4 +47,9 @@ class Worker(Base):
         "Session",
         back_populates="worker",
         foreign_keys="Session.worker_id",
+    )
+    consent_record: Mapped[Optional["ConsentRecord"]] = relationship(
+        "ConsentRecord",
+        back_populates="worker",
+        uselist=False,
     )
