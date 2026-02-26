@@ -8,6 +8,10 @@ from app.models.session import Session
 from app.models.activity_event import ActivityEvent, ActivityLabel
 from app.models.session_aggregate import SessionAggregate
 from app.models.user import User
+from app.models.notification import Notification
+from app.models.system_config import SystemConfig
+from app.models.audit_log import AuditLog
+from app.models.consent import ConsentRecord
 
 __all__ = [
     "Base",
@@ -18,4 +22,9 @@ __all__ = [
     "ActivityEvent",
     "SessionAggregate",
     "User",
+    "Notification",
+    "SystemConfig",
+    "AuditLog",
+    "ConsentRecord",
 ]
+
