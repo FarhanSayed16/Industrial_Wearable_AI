@@ -1,0 +1,194 @@
+/* ── Notification Center CSS ── */
+.nc-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.nc-trigger {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    transition: all 0.2s;
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.nc-trigger:hover {
+    background: var(--color-bg-card);
+    color: var(--color-text);
+}
+
+.nc-badge {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    background: var(--color-danger);
+    color: #fff;
+    font-size: 0.65rem;
+    font-weight: 700;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid var(--color-bg);
+}
+
+.nc-dropdown {
+    position: absolute;
+    top: calc(100% + 10px);
+    right: -10px;
+    /* Offset because it might be in the sidebar or header */
+    width: 320px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-xl);
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: nc-slide-down 0.2s ease-out;
+}
+
+@keyframes nc-slide-down {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.nc-header {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: var(--color-bg);
+}
+
+.nc-header h4 {
+    margin: 0;
+    font-size: 0.95rem;
+    font-weight: 600;
+}
+
+.nc-mark-all {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.nc-mark-all:hover {
+    color: var(--color-primary);
+}
+
+.nc-list {
+    max-height: 380px;
+    overflow-y: auto;
+}
+
+.nc-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-size: 0.85rem;
+}
+
+.nc-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    background: rgba(255, 255, 255, 0.02);
+    transition: background 0.2s;
+}
+
+.nc-item:hover {
+    background: var(--color-bg);
+}
+
+.nc-item.nc-read {
+    opacity: 0.65;
+    background: transparent;
+}
+
+.nc-icon-badge {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    margin-top: 5px;
+    flex-shrink: 0;
+}
+
+.nc-type-info {
+    background: var(--color-primary);
+}
+
+.nc-type-warning {
+    background: var(--color-warning);
+}
+
+.nc-type-alert {
+    background: var(--color-danger);
+}
+
+.nc-type-success {
+    background: var(--color-success);
+}
+
+.nc-content {
+    flex: 1;
+}
+
+.nc-title {
+    margin: 0 0 0.25rem;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--color-text);
+}
+
+.nc-body {
+    margin: 0 0 0.5rem;
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+}
+
+.nc-time {
+    margin: 0;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+}
+
+.nc-item-read-btn {
+    background: transparent;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    border-radius: var(--radius-sm);
+}
+
+.nc-item-read-btn:hover {
+    background: var(--color-border);
+    color: var(--color-text);
+}
