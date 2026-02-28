@@ -8,6 +8,9 @@ import "./Layout.css";
 import Header from "./Header";
 import HelpModal from "./HelpModal";
 import Sidebar from "./Sidebar";
+import { Onboarding } from "./Onboarding";
+import { AIChat } from "./AIChat";
+import { useKeyboard } from "../hooks/useKeyboard";
 
 const PAGE_TITLES: Record<string, string> = {
   "/": "Live Overview",
@@ -24,6 +27,9 @@ export default function Layout() {
   const [helpOpen, setHelpOpen] = useState(false);
   const { pathname } = useLocation();
   const title = getPageTitle(pathname);
+
+  // Mount global keyboard shortcuts
+  useKeyboard();
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -47,6 +53,8 @@ export default function Layout() {
     <div className="app-shell">
       <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
       <HelpModal isOpen={helpOpen} onClose={() => setHelpOpen(false)} />
+      <Onboarding />
+      <AIChat />
       <div className="app-main">
         <button
           type="button"
