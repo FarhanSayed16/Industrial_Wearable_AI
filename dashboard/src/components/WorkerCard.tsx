@@ -3,10 +3,12 @@
  * Phase 4.2: Avatar, progress ring; sample workers get expandable history.
  */
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
 import { ChevronDown, History, User } from "lucide-react";
 import { getWorkerHistory, type WorkerHistoryEntry } from "../api/workers";
 import type { WorkerState } from "../hooks/useWebSocket";
+import { DigitalTwin } from "./DigitalTwin";
 import Card from "./ui/Card";
 
 const stateColors: Record<string, string> = {
@@ -151,7 +153,9 @@ export default function WorkerCard({
             </svg>
           </div>
           <div className="worker-card-meta">
-            <div className="worker-card-name">{name}</div>
+            <div className="worker-card-name">
+              <Link to={`/workers/${name}`} className="worker-card-name-link">{name}</Link>
+            </div>
             <div className="worker-card-badges">
               <motion.span
                 className="worker-card-state"
@@ -228,6 +232,17 @@ export default function WorkerCard({
                 )}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Render Digital Twin for Live Data */}
+        {!isSample && (
+          <div className="worker-card-twin" style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1rem', textAlign: 'center' }}>
+            <p style={{ marginBottom: '0.5rem', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>Live Posture Twin</p>
+            <DigitalTwin
+              riskLevel={risk_ergo ? 'high' : risk_fatigue ? 'medium' : 'low'}
+              isSewing={current_state === 'sewing'}
+            />
           </div>
         )}
       </div>
