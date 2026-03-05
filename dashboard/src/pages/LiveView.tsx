@@ -18,6 +18,7 @@ import StateDonutLive from "../components/charts/StateDonutLive";
 import WorkerCard from "../components/WorkerCard";
 import type { WorkerState } from "../hooks/useWebSocket";
 import { useWebSocket } from "../hooks/useWebSocket";
+import { useVoiceAlert } from "../hooks/useVoiceAlert";
 
 type SortBy = "name" | "state" | "updated";
 type ViewTab = "all" | "working" | "idle" | "at_risk";
@@ -46,6 +47,7 @@ export default function LiveView() {
   const [riskFilter, setRiskFilter] = useState<"all" | "at_risk" | "ok">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortBy, setSortBy] = useState<SortBy>("name");
+  const { speak } = useVoiceAlert(true); // Enable voice alerts
 
   const fetchWorkers = useCallback(async () => {
     try {
@@ -128,9 +130,16 @@ export default function LiveView() {
     const added = [...atRiskIds].filter((id) => !prev.has(id));
     if (added.length > 0 && prev.size > 0) {
       toast("New alert: worker(s) at risk", { icon: "⚠️", style: { borderLeft: "4px solid var(--color-error)" } });
+      added.forEach(id => {
+        const workerObj = liveOnly.find(w => w.worker_id === id);
+        if (workerObj) {
+          const riskType = workerObj.risk_ergo ? 'Ergonomic' : 'Fatigue';
+          speak(workerObj.name, riskType);
+        }
+      });
     }
     prevAtRiskRef.current = atRiskIds;
-  }, [liveOnly]);
+  }, [liveOnly, speak]);
 
   return (
     <div className="live-overview-page">
