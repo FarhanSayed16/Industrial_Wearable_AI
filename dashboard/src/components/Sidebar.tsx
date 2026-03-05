@@ -2,6 +2,7 @@
  * Industrial Wearable AI — Sidebar Navigation
  */
 import { NavLink, useNavigate } from "react-router-dom";
+import NotificationCenter from "./NotificationCenter";
 
 interface SidebarProps {
   isOpen: boolean;
@@ -10,8 +11,12 @@ interface SidebarProps {
 
 const navItems = [
   { to: "/", label: "Live Overview" },
+  { to: "/map", label: "Floor Map" },
   { to: "/sessions", label: "Shift Summary" },
-  { to: "/settings/password", label: "Change Password" },
+  { to: "/analytics", label: "Analytics" },
+  { to: "/labeling", label: "Labeling Queue" },
+  { to: "/privacy", label: "Privacy & Consent" },
+  { to: "/settings", label: "Settings" },
 ];
 
 export default function Sidebar({ isOpen, onClose }: SidebarProps) {
@@ -27,8 +32,9 @@ export default function Sidebar({ isOpen, onClose }: SidebarProps) {
   return (
     <>
       <aside className={`sidebar ${isOpen ? "sidebar-open" : ""}`}>
-        <div className="sidebar-header">
+        <div className="sidebar-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', paddingRight: '1rem' }}>
           <span className="sidebar-brand">Wearable AI</span>
+          <NotificationCenter />
         </div>
         <nav className="sidebar-nav">
           {navItems.map(({ to, label }) => (
