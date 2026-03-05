@@ -1,0 +1,163 @@
+/* ── Labeling Queue Page ── */
+.lq-page {
+    padding: 0;
+}
+
+.lq-header {
+    margin-bottom: 1.5rem;
+}
+
+.lq-title {
+    font-size: 1.6rem;
+    font-weight: 700;
+    margin: 0 0 0.25rem;
+    color: var(--color-text);
+}
+
+.lq-subtitle {
+    font-size: 0.85rem;
+    color: var(--color-text-muted);
+    margin: 0;
+}
+
+.lq-labeled-count {
+    font-weight: 600;
+    color: var(--color-success);
+}
+
+.lq-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+}
+
+.lq-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 40vh;
+    gap: 0.5rem;
+    color: var(--color-text-muted);
+}
+
+.lq-empty-icon {
+    font-size: 2.5rem;
+}
+
+.lq-empty p {
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.lq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.lq-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1rem 1.25rem;
+    box-shadow: var(--shadow-sm);
+    transition: box-shadow 0.2s;
+}
+
+.lq-card:hover {
+    box-shadow: var(--shadow-md);
+}
+
+.lq-card-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.lq-worker {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--color-text);
+}
+
+.lq-time {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+}
+
+.lq-confidence {
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 600;
+}
+
+.lq-card-body {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+.lq-prediction {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.lq-pred-label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+}
+
+.lq-pred-badge {
+    display: inline-block;
+    padding: 0.2rem 0.6rem;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.lq-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+}
+
+.lq-action-label {
+    font-size: 0.78rem;
+    color: var(--color-text-muted);
+    margin-right: 0.25rem;
+}
+
+.lq-label-btn {
+    padding: 0.3rem 0.6rem;
+    border-radius: var(--radius-md);
+    border: 1.5px solid;
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.lq-label-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-sm);
+}
+
+.lq-label-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.lq-label-btn--predicted {
+    font-weight: 600;
+}

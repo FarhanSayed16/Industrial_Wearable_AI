@@ -1,0 +1,26 @@
+/* Privacy.css */
+.privacy-page {
+    animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.privacy-page button:hover {
+    filter: brightness(0.9);
+}
+
+.privacy-page select:focus,
+.privacy-page input[type="checkbox"]:focus {
+    outline: 2px solid #3b82f6;
+    outline-offset: 2px;
+}
