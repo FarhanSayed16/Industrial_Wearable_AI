@@ -4,7 +4,7 @@
  */
 import { useCallback, useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Calendar, FileText } from "lucide-react";
+import { Calendar, FileText, Download } from "lucide-react";
 import { getSessions, getSessionSummary, type Session, type SessionSummary } from "../api/sessions";
 import ActivityDonut from "../components/charts/ActivityDonut";
 import Card from "../components/ui/Card";
@@ -45,7 +45,7 @@ function filterSessionsByDate(sessions: Session[], filter: DateFilter): Session[
   });
 }
 
-function SummaryTable({ summary }: { summary: SessionSummary }) {
+function SummaryTable({ summary, sessionId, onDownloadPdf }: { summary: SessionSummary, sessionId: string, onDownloadPdf: (id: string) => void }) {
   const rows = [
     { label: "Active (sewing)", value: summary.active_pct, color: "#22c55e" },
     { label: "Idle", value: summary.idle_pct, color: "#94a3b8" },
@@ -55,8 +55,15 @@ function SummaryTable({ summary }: { summary: SessionSummary }) {
 
   return (
     <Card>
-      <h3 style={{ margin: "0 0 1rem 0", fontSize: "1rem" }}>
-        Worker: {summary.worker_id}
+      <h3 style={{ margin: "0 0 1rem 0", fontSize: "1rem", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>Worker: {summary.worker_id}</span>
+        <button
+          onClick={() => onDownloadPdf(sessionId)}
+          style={{ display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.4rem 0.6rem", fontSize: "0.75rem", border: "1px solid var(--color-border)", borderRadius: "6px", background: "var(--color-bg)", cursor: "pointer", color: "inherit" }}
+          title="Download Shift Report PDF"
+        >
+          <FileText size={14} /> Download PDF
+        </button>
       </h3>
       <ActivityDonut summary={summary} />
       <table style={{ width: "100%", borderCollapse: "collapse" }}>
@@ -128,6 +135,50 @@ export default function Sessions() {
     return () => clearInterval(interval);
   }, [pathname, loadSessions]);
 
+  const handleExport = async () => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const apiUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/api/export/sessions`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("Export failed");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sessions_export_${new Date().getTime()}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert("Failed to export sessions");
+    }
+  };
+
+  const handleDownloadPdf = async (id: string) => {
+    try {
+      const token = localStorage.getItem("access_token");
+      const apiUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:8000";
+      const res = await fetch(`${apiUrl}/api/reports/session/${id}/pdf`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (!res.ok) throw new Error("PDF download failed");
+      const blob = await res.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `shift_report_${id.slice(0, 8)}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+    } catch {
+      alert("Failed to download PDF report");
+    }
+  };
+
   useEffect(() => {
     if (!selectedId) {
       setSummary(null);
@@ -188,6 +239,13 @@ export default function Sessions() {
             <option value="7d">Last 7 days</option>
             <option value="30d">Last 30 days</option>
           </select>
+          <button
+            onClick={handleExport}
+            style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: "0.25rem", padding: "0.4rem 0.6rem", fontSize: "0.75rem", border: "1px solid var(--color-border)", borderRadius: "6px", background: "var(--color-bg)", cursor: "pointer" }}
+            title="Export to CSV"
+          >
+            <Download size={14} /> Export
+          </button>
         </div>
         {sessions.length === 0 ? (
           <EmptyState
@@ -235,7 +293,7 @@ export default function Sessions() {
 
       <div>
         {selectedId && summary ? (
-          <SummaryTable summary={summary} />
+          <SummaryTable summary={summary} sessionId={selectedId} onDownloadPdf={handleDownloadPdf} />
         ) : selectedId ? (
           <div style={{ padding: "2rem", color: "#64748b" }}>
             Loading summary...
