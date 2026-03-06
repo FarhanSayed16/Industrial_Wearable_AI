@@ -1,0 +1,217 @@
+/* ── Worker Profile Page ── */
+.wp-page {
+    padding: 0;
+}
+
+.wp-back {
+    display: inline-block;
+    color: var(--color-primary);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    text-decoration: none;
+    transition: opacity 0.15s;
+}
+
+.wp-back:hover {
+    opacity: 0.7;
+}
+
+.wp-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 60vh;
+    color: var(--color-text-muted);
+    font-size: 1.1rem;
+}
+
+/* Header Card */
+.wp-header-card {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem 1.5rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.25rem;
+    flex-wrap: wrap;
+}
+
+.wp-avatar {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-primary), #8b5cf6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    flex-shrink: 0;
+}
+
+.wp-header-info {
+    flex: 1;
+    min-width: 120px;
+}
+
+.wp-name {
+    font-size: 1.35rem;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text);
+}
+
+.wp-role {
+    font-size: 0.82rem;
+    color: var(--color-text-muted);
+}
+
+.wp-stats-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.wp-stat {
+    text-align: center;
+}
+
+.wp-stat-value {
+    display: block;
+    font-size: 1.3rem;
+    font-weight: 700;
+    color: var(--color-text);
+}
+
+.wp-stat-label {
+    display: block;
+    font-size: 0.7rem;
+    color: var(--color-text-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+/* Cards */
+.wp-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-lg);
+    padding: 1.25rem;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.25rem;
+}
+
+.wp-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    margin: 0 0 0.75rem;
+    color: var(--color-text);
+}
+
+.wp-empty {
+    padding: 2rem 0;
+    text-align: center;
+    color: var(--color-text-muted);
+    font-style: italic;
+}
+
+/* Percent Bars */
+.wp-pct-bar {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    width: 100%;
+}
+
+.wp-pct-fill {
+    height: 8px;
+    border-radius: 4px;
+    min-width: 2px;
+    transition: width 0.3s ease;
+}
+
+.wp-pct-label {
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    min-width: 30px;
+}
+
+/* Table */
+.wp-table-wrap {
+    overflow-x: auto;
+}
+
+.wp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+
+.wp-table th {
+    text-align: left;
+    padding: 0.5rem 0.6rem;
+    color: var(--color-text-muted);
+    font-weight: 600;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    border-bottom: 1px solid var(--color-border);
+}
+
+.wp-table td {
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text);
+}
+
+.wp-table tr:last-child td {
+    border-bottom: none;
+}
+
+.wp-table tr:hover td {
+    background: rgba(var(--color-primary-rgb, 59, 130, 246), 0.04);
+}
+
+.wp-alerts-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+    height: 22px;
+    padding: 0 6px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    background: var(--color-bg);
+    color: var(--color-text-muted);
+}
+
+.wp-alerts-badge--active {
+    background: rgba(239, 68, 68, 0.12);
+    color: var(--color-error);
+}
+
+.wp-replay-link {
+    font-size: 0.78rem;
+    color: var(--color-primary);
+    text-decoration: none;
+}
+
+.wp-replay-link:hover {
+    text-decoration: underline;
+}
+
+@media (max-width: 600px) {
+    .wp-header-card {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .wp-stats-row {
+        width: 100%;
+        justify-content: space-around;
+    }
+}
