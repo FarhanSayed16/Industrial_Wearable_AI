@@ -1,0 +1,50 @@
+@startuml Industrial_Wearable_AI_Context
+!include theme.puml
+title Industrial Wearable AI — System Context (C4 Style)
+
+skinparam component {
+  BackgroundColor #F0FDFA
+  BorderColor #0d9488
+}
+skinparam actor {
+  BackgroundColor #EFF6FF
+  BorderColor #1e40af
+}
+
+actor "Worker" as Worker #EFF6FF
+actor "Supervisor" as Supervisor #EFF6FF
+
+rectangle "Industrial Wearable AI System" as System #F0FDFA {
+
+  rectangle "Wearable" as Wearable #EFF6FF {
+    [ESP32 + IMU\nBLE] as Dev
+  }
+
+  rectangle "Edge Gateway" as Edge #F0FDFA {
+    [Python\nBLE → Buffer → ML → API] as EdgeProc
+  }
+
+  rectangle "Backend" as Backend #F0FDFA {
+    [FastAPI\nREST + WebSocket] as API
+    [PostgreSQL] as DB
+  }
+
+  rectangle "Dashboard" as Dashboard #F0FDFA {
+    [React\nLive Overview\nAlerts\nSessions] as Web
+  }
+}
+
+Worker --> Wearable : wears
+Wearable --> Edge : BLE\n(IMU stream)
+Edge --> Backend : HTTP\n(events, sensor)
+Backend --> Dashboard : WebSocket\n(live state)
+Supervisor --> Dashboard : HTTP\n(view, login)
+
+note right of System
+  **Purpose:** Real-time visibility
+  into worker activity and risk
+  (ergonomic, fatigue) for
+  textile manufacturing SMEs.
+end note
+
+@enduml
