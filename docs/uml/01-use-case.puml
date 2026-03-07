@@ -1,0 +1,62 @@
+@startuml Industrial_Wearable_AI_Use_Case
+!include theme.puml
+title Industrial Wearable AI — Use Case Diagram
+
+left to right direction
+skinparam useCase {
+  BackgroundColor #F0FDFA
+  BorderColor #0d9488
+  FontColor #0f172a
+}
+skinparam actor {
+  BackgroundColor #EFF6FF
+  BorderColor #1e40af
+}
+
+actor "Worker" as Worker #EFF6FF
+actor "Supervisor" as Supervisor #EFF6FF
+actor "System\n(Edge/Backend)" as System #F1F5F9
+
+rectangle "Wearable & Edge" {
+  usecase "Wear wrist device" as UC1
+  usecase "Stream IMU data\nover BLE" as UC2
+  usecase "Classify activity\n(sewing/idle/...)" as UC3
+  usecase "Post events to backend" as UC4
+}
+
+rectangle "Backend" {
+  usecase "Persist events\n& sessions" as UC5
+  usecase "Broadcast live state\n(WebSocket)" as UC6
+  usecase "Serve REST API\n(workers, history, timeline)" as UC7
+}
+
+rectangle "Dashboard" {
+  usecase "Login" as UC8
+  usecase "View Live Overview\n(workers, KPIs, alerts)" as UC9
+  usecase "View alerts\n(ergonomic, fatigue)" as UC10
+  usecase "View worker history\n& session summary" as UC11
+  usecase "View activity timeline\n& charts" as UC12
+  usecase "Change password" as UC13
+}
+
+Worker --> UC1
+Worker --> UC2
+System --> UC3
+System --> UC4
+System --> UC5
+System --> UC6
+System --> UC7
+Supervisor --> UC8
+Supervisor --> UC9
+Supervisor --> UC10
+Supervisor --> UC11
+Supervisor --> UC12
+Supervisor --> UC13
+
+UC2 ..> UC3 : triggers
+UC3 ..> UC4 : triggers
+UC4 ..> UC5 : triggers
+UC5 ..> UC6 : triggers
+UC8 ..> UC9 : precedes
+
+@enduml
