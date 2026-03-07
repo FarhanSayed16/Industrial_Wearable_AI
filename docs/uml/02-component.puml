@@ -1,0 +1,61 @@
+@startuml Industrial_Wearable_AI_Component
+!include theme.puml
+title Industrial Wearable AI — Component Diagram
+
+skinparam component {
+  BackgroundColor #F0FDFA
+  BorderColor #0d9488
+}
+
+package "Wearable (ESP32)" #EFF6FF {
+  component [Firmware] as FW
+  component [IMU Driver\n(MPU6050/9250)] as IMU
+  component [BLE GATT Server\n(NimBLE)] as BLE
+  component [JSON Packer] as JSON
+  FW --> IMU
+  FW --> BLE
+  FW --> JSON
+}
+
+package "Edge Gateway (Python)" #F0FDFA {
+  component [BLE Client\n(bleak)] as EdgeBLE
+  component [Sample Buffer\n(ring buffer)] as Buffer
+  component [Pipeline\n(filter, window)] as Pipeline
+  component [Feature Extractor\n(30-dim)] as Feat
+  component [Classifier\n(ML / rule-based)] as Classifier
+  component [API Client\n(aiohttp)] as APIClient
+  EdgeBLE --> Buffer
+  Buffer --> Pipeline
+  Pipeline --> Feat
+  Feat --> Classifier
+  Classifier --> APIClient
+}
+
+package "Backend (FastAPI)" #F0FDFA {
+  component [REST API\n(auth, events, live,\nworkers, sessions, activity)] as REST
+  component [WebSocket Hub] as WS
+  component [Event Service\n(persist, aggregate)] as EventSvc
+  component [Database\n(PostgreSQL)] as DB
+  REST --> EventSvc
+  REST --> DB
+  EventSvc --> WS
+}
+
+package "Dashboard (React)" #F0FDFA {
+  component [Auth\n(login, JWT)] as Auth
+  component [Live Overview\n(workers, KPIs, alerts)] as LiveView
+  component [Shift Summary\n(sessions)] as Sessions
+  component [useWebSocket\n(live state, sensor)] as Hook
+  component [Charts\n(donut, timeline, trend)] as Charts
+  Auth --> LiveView
+  Auth --> Sessions
+  Hook --> LiveView
+  LiveView --> Charts
+}
+
+FW -[#0d9488]-> EdgeBLE : BLE\n(JSON)
+APIClient -[#0d9488]-> REST : HTTP\n(POST events,\nsensor)
+LiveView -[#1e40af]-> REST : HTTP\n(API)
+LiveView -[#1e40af]-> WS : WebSocket\n(live state)
+
+@enduml
