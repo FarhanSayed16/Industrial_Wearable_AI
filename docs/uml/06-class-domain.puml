@@ -1,0 +1,93 @@
+@startuml Industrial_Wearable_AI_Class_Domain
+!include theme.puml
+title Industrial Wearable AI — Class Diagram (Domain / Backend Models)
+
+skinparam classAttributeIconSize 0
+skinparam classFontStyle bold
+
+class User <<entity>> {
+  - id: UUID
+  - username: String
+  - hashed_password: String
+  - created_at: DateTime
+  --
+  + (table: users)
+}
+
+class Worker <<entity>> {
+  - id: UUID
+  - name: String
+  - role: String?
+  - device_id: UUID?
+  - created_at: DateTime
+  --
+  + (table: workers)
+}
+
+class Device <<entity>> {
+  - id: UUID
+  - hardware_id: String
+  - worker_id: UUID?
+  - last_seen_at: DateTime?
+  --
+  + (table: devices)
+}
+
+class Session <<entity>> {
+  - id: UUID
+  - worker_id: UUID
+  - started_at: DateTime
+  - ended_at: DateTime?
+  - shift_label: String?
+  --
+  + (table: sessions)
+}
+
+class ActivityEvent <<entity>> {
+  - id: UUID
+  - session_id: UUID
+  - ts: DateTime
+  - label: ActivityLabel
+  - risk_ergo: Boolean
+  - risk_fatigue: Boolean
+  --
+  + (table: activity_events)
+}
+
+class SessionAggregate <<entity>> {
+  - session_id: UUID
+  - active_pct: Float?
+  - idle_pct: Float?
+  - adjusting_pct: Float?
+  - error_pct: Float?
+  - alert_count: Integer
+  - updated_at: DateTime
+  --
+  + (table: session_aggregates)
+}
+
+enum ActivityLabel <<enumeration>> {
+  sewing
+  idle
+  adjusting
+  error
+  break
+}
+
+Worker "1" -- "0..1" Device : device_id >
+Worker "1" -- "*" Session : sessions >
+Session "1" -- "*" ActivityEvent : activity_events >
+Session "1" -- "0..1" SessionAggregate : aggregate >
+ActivityEvent ..> ActivityLabel : label
+
+note bottom of ActivityEvent
+  Ingested via POST /api/events
+  from Edge (classified label)
+end note
+
+note bottom of SessionAggregate
+  Computed from activity_events
+  per session (percentages, alert_count)
+end note
+
+@enduml
