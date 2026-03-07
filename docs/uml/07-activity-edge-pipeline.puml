@@ -1,0 +1,53 @@
+@startuml Industrial_Wearable_AI_Activity_EdgePipeline
+!include theme.puml
+title Industrial Wearable AI — Activity Diagram: Edge Pipeline
+
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam ActivityBorderColor #0d9488
+skinparam ActivityDiamondBackgroundColor #FEF3C7
+skinparam ActivityDiamondBorderColor #f59e0b
+
+start
+:Receive BLE sample\n{worker_id, ts, ax, ay, az, gx, gy, gz, temp};
+
+if (mpu_connected?) then (false)
+  :POST /api/live/device-status\n(mpu_connected: false);
+  stop
+else (true)
+endif
+
+:Append sample to ring buffer;
+
+if (Buffer has full window?\n(75 samples @ 25 Hz)) then (no)
+  stop
+else (yes)
+endif
+
+:Get sliding window\n(last 75 samples, step by overlap);
+
+:Apply low-pass filter\n(EMA α=0.3) per axis;
+
+:Extract 30 features:\nper axis (ax,ay,az,gx,gy,gz):\nmean, std, min, max, zero_crossing_rate;
+
+if (ML model loaded?) then (yes)
+  :model.predict(features)\n→ label;
+else (no)
+  :Rule-based classifier:\nvariance thresholds\n→ idle | adjusting | sewing;
+endif
+
+:Set risk flags\n(risk_ergo, risk_fatigue);
+
+:Append to event batch\n{ts, label, risk_ergo, risk_fatigue};
+
+if (Batch size ≥ 5\nor flush timer?) then (yes)
+  :POST /api/events\n{worker_id, events[]};
+  :Backend persists & broadcasts\nworker state via WebSocket;
+  :Clear batch;
+else (no)
+endif
+
+:Periodic: POST /api/live/sensor\n(temp, accel_mag);
+
+stop
+
+@enduml
