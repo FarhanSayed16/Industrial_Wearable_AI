@@ -1,0 +1,59 @@
+@startuml Industrial_Wearable_AI_Deployment
+!include theme.puml
+title Industrial Wearable AI — Deployment Diagram
+
+skinparam node {
+  BackgroundColor #F0FDFA
+  BorderColor #0d9488
+}
+skinparam database {
+  BackgroundColor #EFF6FF
+  BorderColor #1e40af
+}
+skinparam cloud {
+  BackgroundColor #F1F5F9
+  BorderColor #94a3b8
+}
+
+node "Wearable Device" as Wearable #EFF6FF {
+  artifact "ESP32 Firmware"
+  artifact "MPU6050/9250\n(I2C)"
+  artifact "BLE Radio"
+}
+
+node "Laptop (Edge + Backend + Dashboard)" as Laptop #F0FDFA {
+  node "Edge Process" {
+    artifact "Python 3.10+\nbleak, scikit-learn, aiohttp"
+  }
+  node "Backend Process" {
+    artifact "FastAPI\nuvicorn"
+    artifact "WebSocket Hub"
+  }
+  node "Dashboard Process" {
+    artifact "React + Vite\ndev server (port 5173)"
+  }
+}
+
+database "PostgreSQL" as PG #EFF6FF {
+  artifact "wearable_ai DB\n(workers, sessions,\nactivity_events, users)"
+}
+
+actor "Worker" as Worker
+actor "Supervisor\n(Browser)" as Supervisor
+
+Worker --> Wearable : wears
+Wearable -[#0d9488]-> Laptop : BLE\n(~10m)
+Laptop -[#1e40af]-> PG : TCP 5432\n(asyncpg)
+Supervisor -[#64748b]-> Laptop : HTTP/WS\n(localhost:5173\n→ 8000)
+
+note right of Wearable
+  Worker ID (e.g. W01)
+  configured in firmware
+end note
+
+note bottom of Laptop
+  Single-machine deployment
+  No cloud required
+end note
+
+@enduml
