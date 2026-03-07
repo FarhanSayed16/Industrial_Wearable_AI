@@ -1,0 +1,14 @@
+[
+    {
+        "mac_address": "SIMULATOR_1",
+        "worker_id": "W02"
+    },
+    {
+        "mac_address": "SIMULATOR_2",
+        "worker_id": "W03"
+    },
+    {
+        "mac_address": "SIMULATOR_3",
+        "worker_id": "W04"
+    }
+]
