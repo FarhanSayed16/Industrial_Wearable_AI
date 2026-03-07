@@ -1,0 +1,41 @@
+@startuml Industrial_Wearable_AI_Sequence_DataFlow
+!include theme.puml
+title Industrial Wearable AI — Sequence: Data Flow (Wearable → Dashboard)
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBorderColor #0d9488
+skinparam sequenceParticipantBackgroundColor #F0FDFA
+skinparam sequenceLifeLineBorderColor #94a3b8
+
+participant "Wearable\n(ESP32)" as W #EFF6FF
+participant "Edge\n(Python)" as E #F0FDFA
+participant "Backend\n(FastAPI)" as B #F0FDFA
+participant "PostgreSQL" as DB #EFF6FF
+participant "Dashboard\n(React)" as D #F0FDFA
+
+== IMU stream ==
+loop every ~40 ms (25 Hz)
+  W -> E : BLE notify\n{worker_id, ts, ax, ay, az, gx, gy, gz, temp}
+  E -> E : buffer.append(sample)
+end
+
+== Window ready ==
+E -> E : get_window(75 samples)
+E -> E : low-pass filter
+E -> E : extract 30 features
+E -> E : classify → label\n(sewing|idle|adjusting|error|break)
+E -> E : set risk_ergo, risk_fatigue
+
+== Post events ==
+E -> B : POST /api/events\n{worker_id, events: [{ts, label, risk_ergo, risk_fatigue}]}
+B -> DB : insert activity_events\nupdate session_aggregates
+B -> B : get last event state
+B -> D : WebSocket broadcast\n{worker_id, name, current_state,\nrisk_ergo, risk_fatigue, updated_at}
+D -> D : update worker card, KPIs, alerts
+
+== Sensor snapshot (periodic) ==
+E -> B : POST /api/live/sensor\n{worker_id, temp, accel_mag, ts}
+B -> D : WebSocket broadcast\n{type: "sensor", worker_id, temp, accel_mag}
+D -> D : update live sensor strip
+
+@enduml
