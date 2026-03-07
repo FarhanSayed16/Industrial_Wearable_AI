@@ -1,0 +1,40 @@
+@startuml Industrial_Wearable_AI_Sequence_Login_WebSocket
+!include theme.puml
+title Industrial Wearable AI — Sequence: Login & WebSocket Subscription
+
+skinparam sequenceArrowThickness 2
+skinparam sequenceParticipantBorderColor #0d9488
+skinparam sequenceParticipantBackgroundColor #F0FDFA
+
+participant "Supervisor\n(Browser)" as User #EFF6FF
+participant "Dashboard\n(React)" as D #F0FDFA
+participant "Backend\n(FastAPI)" as B #F0FDFA
+participant "PostgreSQL" as DB #EFF6FF
+
+== Login ==
+User -> D : Enter credentials\n(admin / admin123)
+D -> B : POST /api/auth/login\n{username, password}
+B -> DB : verify user, check password hash
+DB --> B : user record
+B --> D : 200 OK\n{access_token, token_type}
+D -> D : store token in localStorage\nredirect to Live Overview
+
+== Load workers (optional) ==
+D -> B : GET /api/workers\nAuthorization: Bearer <token>
+B -> DB : select workers
+DB --> B : workers[]
+B --> D : 200 OK\n[{id, name, ...}]
+
+== WebSocket connect ==
+D -> B : WebSocket /ws/live
+B --> D : 101 Switching Protocols\n(connected)
+D -> D : set connected = true\nshow "Connected" badge
+
+== Live updates (when edge posts events) ==
+B -> D : WebSocket message\n{worker_id, name, current_state,\nrisk_ergo, risk_fatigue, updated_at}
+D -> D : merge into workers state\nre-render cards, KPIs, alerts
+
+B -> D : WebSocket message\n{type: "sensor", worker_id, temp, accel_mag}
+D -> D : update sensorByWorker\nrefresh sensor strip
+
+@enduml
