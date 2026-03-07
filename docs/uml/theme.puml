@@ -1,0 +1,30 @@
+' Industrial Wearable AI — Shared theme
+' Include in other diagrams: !include theme.puml
+
+skinparam backgroundColor #F8FAFC
+skinparam defaultFontName Arial
+skinparam defaultFontSize 11
+skinparam roundCorner 8
+skinparam shadowing false
+skinparam padding 8
+
+skinparam ArrowColor #475569
+skinparam ArrowThickness 2
+skinparam ClassBorderColor #0d9488
+skinparam ClassBackgroundColor #FFFFFF
+skinparam ClassAttributeBackgroundColor #F1F5F9
+skinparam ComponentBorderColor #0d9488
+skinparam ComponentBackgroundColor #F0FDFA
+skinparam ActorBorderColor #1e40af
+skinparam ActorBackgroundColor #EFF6FF
+skinparam UseCaseBorderColor #0d9488
+skinparam UseCaseBackgroundColor #F0FDFA
+skinparam SequenceParticipantBorderColor #0d9488
+skinparam SequenceParticipantBackgroundColor #F0FDFA
+skinparam SequenceLifeLineBorderColor #94a3b8
+skinparam StateBorderColor #0d9488
+skinparam StateBackgroundColor #F0FDFA
+skinparam ActivityBackgroundColor #FFFFFF
+skinparam ActivityBorderColor #0d9488
+skinparam ActivityDiamondBackgroundColor #FEF3C7
+skinparam ActivityDiamondBorderColor #f59e0b
