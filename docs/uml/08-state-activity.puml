@@ -1,0 +1,51 @@
+@startuml Industrial_Wearable_AI_State_Activity
+!include theme.puml
+title Industrial Wearable AI — State Diagram: Worker Activity
+
+skinparam state {
+  BackgroundColor #F0FDFA
+  BorderColor #0d9488
+}
+skinparam arrowColor #475569
+
+state "Worker Activity State" as Activity {
+  state "sewing" as sewing #DCFCE7
+  state "idle" as idle #F1F5F9
+  state "adjusting" as adjusting #DBEAFE
+  state "error" as error #FEE2E2
+  state "break" as break #FEF3C7
+}
+
+[*] --> sewing : initial / classifier output
+[*] --> idle
+[*] --> adjusting
+[*] --> error
+[*] --> break
+
+sewing --> idle : classifier: low motion
+sewing --> adjusting : classifier: medium motion
+idle --> sewing : classifier: high motion
+idle --> break : classifier: break
+adjusting --> sewing : classifier: high motion
+adjusting --> idle : classifier: low motion
+break --> idle : classifier: idle
+break --> sewing : classifier: high motion
+error --> idle : classifier: idle
+error --> sewing : classifier: high motion
+
+note right of sewing
+  **Working** (dashboard)
+  Active task
+end note
+
+note right of idle
+  **Idle / Non-working**
+  May trigger fatigue risk
+end note
+
+note right of error
+  **At risk** (if risk_ergo
+  or risk_fatigue set)
+end note
+
+@enduml
