@@ -1,0 +1,10 @@
+# Industrial Wearable AI — Edge Gateway Dependencies
+# Python 3.10+
+
+numpy>=1.24
+pandas>=2.0
+scikit-learn>=1.2
+joblib>=1.2
+bleak>=0.21
+aiohttp>=3.8
+python-dotenv>=1.0
